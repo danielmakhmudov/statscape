@@ -33,3 +33,26 @@ class SteamAPI:
         except requests.RequestException as e:
             logger.error(f"Steam API error for user {steam_id}: {e}")
             return {}
+
+    def get_user_library(self, steam_id: str) -> dict:
+        endpoint = f"{self.base_url}/IPlayerService/GetOwnedGames/v0001/"
+        params = {
+            "steamid": steam_id,
+            "key": self.steam_api_key,
+            "include_appinfo": True,
+            "include_played_free_games": True,
+            "format": "json",
+        }
+
+        try:
+            response = self.session.get(endpoint, params=params)
+            response.raise_for_status()
+            data = response.json()
+
+            if "response" in data and "games" in data["response"]:
+                return data["response"]
+            return {}
+
+        except requests.RequestException as e:
+            logger.error(f"Steam API error for user {steam_id}: {e}")
+            return {}
