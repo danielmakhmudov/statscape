@@ -56,3 +56,25 @@ class SteamAPI:
         except requests.RequestException as e:
             logger.error(f"Steam API error for user {steam_id}: {e}")
             return {}
+
+    def get_recently_played_games(self, steam_id: str) -> dict:
+        endpoint = f"{self.base_url}/IPlayerService/GetRecentlyPlayedGames/v0001/"
+        params = {
+            "steamid": steam_id,
+            "key": self.steam_api_key,
+            "count": 7,
+            "format": "json",
+        }
+
+        try:
+            response = self.session.get(endpoint, params=params)
+            response.raise_for_status()
+            data = response.json()
+
+            if "response" in data and "games" in data["response"]:
+                return data["response"]
+            return {}
+
+        except requests.RequestException as e:
+            logger.error(f"Steam API error for user {steam_id}: {e}")
+            return {}
