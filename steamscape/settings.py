@@ -163,9 +163,12 @@ SOCIAL_AUTH_PIPELINE = (
     "social_core.pipeline.social_auth.auth_allowed",
     "social_core.pipeline.social_auth.social_user",
     "social_core.pipeline.user.get_username",
+    "users.pipeline.create_steam_user",
     "social_core.pipeline.user.create_user",
-    #   'users.pipeline.save_steam_profile',
     "social_core.pipeline.social_auth.associate_user",
     "social_core.pipeline.social_auth.load_extra_data",
+    "users.pipeline.update_steam_user_data",
     "social_core.pipeline.user.user_details",
 )
+
+SOCIAL_AUTH_STEAM_EXTRA_DATA = ["player"]
