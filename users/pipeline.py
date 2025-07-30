@@ -4,12 +4,13 @@ from core.services.steam_api_service import SteamAPI
 steam_api_service = SteamAPI()
 
 
-def create_steam_user(strategy, details, backend, user=None, *args, **kwargs):
+def create_steam_user(strategy, details, backend, response=None, user=None, *args, **kwargs):
     if user:
         return {"is_new": False}
 
     # Получаем Steam ID из response
-    steam_id = kwargs.get("response", {}).get("identity_url", "").split("/")[-1]
+    identity_url = getattr(response, "identity_url", "")
+    steam_id = identity_url.split("/")[-1] if identity_url else None
 
     if not steam_id:
         return None
