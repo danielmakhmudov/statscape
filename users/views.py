@@ -1,5 +1,16 @@
-from django.http import HttpResponse
+from django.shortcuts import render, redirect
+from django.contrib.auth import logout
+from django.contrib import messages
 
 
-def index(request):
-    return HttpResponse("")
+def login_view(request):
+    if request.user.is_authenticated:
+        return redirect("/")
+
+    return render(request, "users/login.html")
+
+
+def logout_view(request):
+    logout(request)
+    messages.success(request, "Successfully logged out")
+    return redirect("login")
