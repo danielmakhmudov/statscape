@@ -24,6 +24,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     steam_id = models.CharField(max_length=64, unique=True)
     nickname = models.CharField(max_length=100, blank=True, null=True)
     avatar_url = models.URLField(blank=True, null=True)
+    steam_account_created_at = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     is_active = models.BooleanField(default=True)
