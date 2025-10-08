@@ -12,9 +12,9 @@ class Genre(models.Model):
 class Game(models.Model):
     app_id = models.CharField(max_length=65, unique=True)
     name = models.CharField(max_length=64)
-    genres = models.ManyToManyField(Genre, related_name="games")
+    genres = models.ManyToManyField(Genre, related_name="games", blank=True, null=True)
     logo_url = models.URLField(blank=True, null=True)
-    rating = models.CharField(max_length=100)
+    rating = models.CharField(max_length=100, blank=True, null=True)
     price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
     def __str__(self):
