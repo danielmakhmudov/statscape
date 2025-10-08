@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- User Profile Card -->
+    <div class="profile-card">
+        <div class="profile-avatar">DM</div>
+        <div class="profile-info">
+            <h2 class="profile-name">Danil Makhmudov</h2>
+            <p class="profile-since">Steam user since 12.01.2023</p>
+        </div>
+        <div class="profile-stats">
+            <div class="stat-item">
+                <div class="stat-value">1,560</div>
+                <div class="stat-label">Total hours</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">25</div>
+                <div class="stat-label">Games in library</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">7</div>
+                <div class="stat-label">Unfinished games</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Two Column Layout -->
+    <div class="dashboard-grid">
+        <!-- Left Column -->
+        <div class="dashboard-left">
+            <!-- Playtime Distribution -->
+            <div class="card">
+                <h3 class="card-title">Playtime by Game</h3>
+                <div class="chart-placeholder">
+                    <div class="chart-legend">
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #f59e0b;"></span>
+                            <span class="legend-text">Game 1 - 45% (702 h)</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #3b82f6;"></span>
+                            <span class="legend-text">Game 2 - 25% (390 h)</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #ec4899;"></span>
+                            <span class="legend-text">Game 3 - 15% (234 h)</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #8b5cf6;"></span>
+                            <span class="legend-text">Game 4 - 10% (156 h)</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #84cc16;"></span>
+                            <span class="legend-text">Other - 5% (78 h)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Unfinished Games -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Potential unfinished games</h3>
+                    <button class="btn-view-all">View all</button>
+                </div>
+                <div class="game-list">
+                    <div class="game-item">
+                        <div class="game-icon">Game1</div>
+                        <div class="game-info">
+                            <div class="game-name">Game 1</div>
+                            <div class="game-progress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 65%;"></div>
+                                </div>
+                                <span class="progress-text">12.5 h • 2 weeks ago</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="game-item">
+                        <div class="game-icon">Game2</div>
+                        <div class="game-info">
+                            <div class="game-name">Game 2</div>
+                            <div class="game-progress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 45%;"></div>
+                                </div>
+                                <span class="progress-text">45.7 h • 1 week ago</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="game-item">
+                        <div class="game-icon">Game3</div>
+                        <div class="game-info">
+                            <div class="game-name">Game 3</div>
+                            <div class="game-progress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 30%;"></div>
+                                </div>
+                                <span class="progress-text">8.1 h • 2 weeks ago</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="dashboard-right">
+            <!-- Favorite Games -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Favorite games</h3>
+                    <button class="btn-view-all">View all</button>
+                </div>
+                <div class="favorite-list">
+                    <div class="favorite-item">
+                        <div class="favorite-icon">Game1</div>
+                        <div class="favorite-info">
+                            <div class="favorite-name">Game 1</div>
+                            <div class="favorite-time">702.4 h</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 90%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="favorite-item">
+                        <div class="favorite-icon">Game2</div>
+                        <div class="favorite-info">
+                            <div class="favorite-name">Game 2</div>
+                            <div class="favorite-time">390.1 h</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 65%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="favorite-item">
+                        <div class="favorite-icon">Game3</div>
+                        <div class="favorite-info">
+                            <div class="favorite-name">Game 3</div>
+                            <div class="favorite-time">234.7 h</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 45%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="card">
+                <h3 class="card-title">Recent activity</h3>
+                <div class="activity-list">
+                    <div class="activity-item">
+                        <div class="activity-icon">Game1</div>
+                        <div class="activity-info">
+                            <div class="activity-name">Game 1</div>
+                            <div class="activity-time">Today</div>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon">Game2</div>
+                        <div class="activity-info">
+                            <div class="activity-name">Game 2</div>
+                            <div class="activity-time">Yesterday</div>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon">Game3</div>
+                        <div class="activity-info">
+                            <div class="activity-name">Game3</div>
+                            <div class="activity-time">2 days ago</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
