@@ -1,5 +1,8 @@
 from core.services.steam_api_service import SteamAPI
 from users.models import User
+from core.models import UserGame, Game
+from django.db import transaction
+from datetime import datetime, timezone as dt_timezone
 
 
 def get_or_fetch_user_profile(steam_id):
@@ -18,3 +21,61 @@ def get_or_fetch_user_profile(steam_id):
         )
 
         return user_profile
+
+
+def fetch_or_get_user_library(steam_id):
+    try:
+        user = User.objects.get(steam_id=steam_id)
+    except User.DoesNotExist:
+        return None
+
+    user_games = UserGame.objects.filter(user=user)
+    if user_games.exists():
+        print("got data from db")
+        return user_games
+
+    steam_api = SteamAPI()
+    data = steam_api.get_user_library(steam_id=user.steam_id)
+    games = data.get("games") if isinstance(data, dict) else None
+    if not games:
+        return None
+
+    with transaction.atomic():
+        for g in games:
+            app_id = g.get("appid")
+            if not app_id:
+                continue
+
+            app_id = str(app_id)
+
+            name = g.get("name") or ""
+            img_logo = g.get("img_icon_url")
+            logo_url = (
+                f"https://media.steampowered.com/steamcommunity/public/images/apps/"
+                f"{app_id}/{img_logo}.jpg"
+                if img_logo
+                else None
+            )
+
+            total_playtime = g.get("playtime_forever", 0)
+            recent_playtime = g.get("playtime_2weeks", 0)
+
+            rtime = g.get("rtime_last_played")
+            last_played = datetime.fromtimestamp(int(rtime), tz=dt_timezone.utc) if rtime else None
+
+            game, _ = Game.objects.get_or_create(
+                app_id=app_id,
+                defaults={
+                    "name": name,
+                    "logo_url": logo_url,
+                },
+            )
+
+            UserGame.objects.create(
+                user=user,
+                game=game,
+                total_playtime=total_playtime,
+                recent_playtime=recent_playtime,
+                last_played=last_played,
+            )
+    return UserGame.objects.filter(user=user)
