@@ -4,25 +4,25 @@
 {% block title %}Sign in - Steamscape{% endblock %}
 
 {% block content %}
-<div class="content-container">
-    <div class="content-header">
-        <h1 class="content-title">Welcome to Steamscape!</h1>
-        <p class="content-subtitle">
+<div class="login-container">
+    <div class="login-content-header">
+        <h1 class="login-content-title">Welcome to Steamscape!</h1>
+        <p class="login-content-subtitle">
             A third-party service that provides statistics for your Steam profile.
         </p>
        
-        <div class="important-notice">
-            <div class="notice-title">Important</div>
-            <div class="notice-text">
+        <div class="login-important-notice">
+            <div class="login-notice-title">Important</div>
+            <div class="login-notice-text">
                 To ensure proper website functionality, please make your Steam profile public in Steam settings.
             </div>
         </div>
     </div>
-    <a href="{% url 'social:begin' 'steam' %}" class="steam-button">
+    <a href="{% url 'social:begin' 'steam' %}" class="login-steam-button">
         <div class="steam-icon"></div>
         <span>Sign in with Steam</span>
     </a>
-    <div class="footer-text">
+    <div class="login-footer-text">
         By clicking the Sign In button, you agree to our  
         <a href="#">Terms of Use</a>
     </div>

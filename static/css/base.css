@@ -98,22 +98,181 @@ body::before {
     box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }
 
-/* ===== MAIN CONTENT ===== */
+
 .main-content {
     position: relative;
     z-index: 1;
-    padding-top: 80px;
     min-height: 100vh;
+}
+
+/* Center content for login page */
+body:has(.login-container) .main-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.container {
+    background: rgba(30, 41, 59, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(148, 163, 184, 0.1);
+    border-radius: 16px;
+    padding: 2rem;
+    animation: slideIn 0.8s ease-out;
+}
+
+/* ===== LOGIN PAGE STYLES ===== */
+.login-container {
+    max-width: 440px;
+    width: 100%;
+    border-radius: 24px;
+    padding: 3rem;
+    box-shadow: 
+        0 25px 50px -12px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+.login-content-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+
+.login-content-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #60a5fa, #a78bfa);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.75rem;
+    letter-spacing: -0.025em;
+}
+
+.login-content-subtitle {
+    color: #94a3b8;
+    font-size: 1rem;
+    line-height: 1.6;
+    max-width: 320px;
+    margin: 0 auto 1rem;
+}
+
+.login-important-notice {
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 12px;
+    padding: 1rem;
+    margin: 1.5rem 0;
+    position: relative;
+}
+
+.login-important-notice::before {
+    content: '⚡';
+    position: absolute;
+    top: -8px;
+    left: 16px;
+    background: linear-gradient(135deg, #1e293b, #334155);
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.875rem;
+}
+
+.login-important-notice .notice-title {
+    color: #60a5fa;
+    font-weight: 600;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.login-important-notice .notice-text {
+    color: #e2e8f0;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.login-steam-button {
+    width: 100%;
+    background: linear-gradient(135deg, #1e40af, #3b82f6);
+    border: none;
+    border-radius: 16px;
+    padding: 1rem 1.5rem;
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    text-decoration: none;
+    margin-top: 2rem;
+    box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.3);
+}
+
+.login-steam-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.6s ease;
+}
+
+.login-steam-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 40px -10px rgba(59, 130, 246, 0.4);
+    background: linear-gradient(135deg, #2563eb, #60a5fa);
+}
+
+.login-steam-button:hover::before {
+    left: 100%;
+}
+
+.login-steam-button:active {
+    transform: translateY(0);
+}
+
+.steam-icon {
+    width: 24px;
+    height: 24px;
+    display: inline-block;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M11.979 0C5.678 0 0.511 4.86 0.022 11.037l6.432 2.658c0.545-0.371 1.203-0.59 1.912-0.59c0.063 0 0.125 0.004 0.188 0.006l2.861-4.142c0-0.016-0.002-0.031-0.002-0.047c0-2.543 2.067-4.611 4.612-4.611c2.544 0 4.611 2.068 4.611 4.611c0 2.545-2.067 4.613-4.611 4.613c-0.034 0-0.067-0.001-0.101-0.002l-4.09 2.885c0.002 0.052 0.003 0.103 0.003 0.156c0 1.927-1.564 3.49-3.49 3.49c-1.678 0-3.081-1.188-3.422-2.769L0.022 15.096C0.2 21.41 5.515 24 11.979 24c6.624 0 11.999-5.375 11.999-12S18.603 0 11.979 0zM7.54 18.21l-1.473-0.61c0.262 0.543 0.714 0.999 1.314 1.25c1.297 0.54 2.793-0.076 3.332-1.375c0.263-0.63 0.264-1.336 0.005-1.968s-0.753-1.13-1.383-1.392c-0.629-0.263-1.293-0.264-1.881-0.045l1.52 0.63c0.956 0.397 1.406 1.505 1.009 2.461C8.587 18.193 7.977 18.409 7.54 18.21zM18.303 8.625c0-1.696-1.379-3.074-3.074-3.074c-1.697 0-3.074 1.379-3.074 3.074c0 1.695 1.377 3.074 3.074 3.074C16.924 11.699 18.303 10.32 18.303 8.625zM13.695 8.625c0-0.893 0.725-1.618 1.618-1.618c0.893 0 1.617 0.725 1.617 1.618c0 0.894-0.724 1.618-1.617 1.618C14.42 10.243 13.695 9.519 13.695 8.625z"/></svg>');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    flex-shrink: 0;
+}
+
+.login-footer-text {
+    text-align: center;
+    margin-top: 2rem;
+    color: #64748b;
+    font-size: 0.875rem;
+}
+
+.login-footer-text a {
+    color: #60a5fa;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.login-footer-text a:hover {
+    color: #93c5fd;
 }
 
 /* ===== DASHBOARD ===== */
 .dashboard-container {
     max-width: 1400px;
     margin: 0 auto;
-    padding: 0 2rem 2rem;
+    padding: 80px 2rem 2rem;
 }
 
-/* Profile Card */
 .profile-card {
     background: rgba(30, 41, 59, 0.95);
     backdrop-filter: blur(20px);
@@ -181,7 +340,6 @@ body::before {
     font-size: 0.85rem;
 }
 
-/* Dashboard Grid */
 .dashboard-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -195,7 +353,6 @@ body::before {
     gap: 2rem;
 }
 
-/* Card */
 .card {
     background: rgba(30, 41, 59, 0.95);
     backdrop-filter: blur(20px);
@@ -238,7 +395,6 @@ body::before {
     background: rgba(59, 130, 246, 0.2);
 }
 
-/* Chart Placeholder */
 .chart-placeholder {
     padding: 2rem 0;
 }
@@ -266,7 +422,6 @@ body::before {
     font-size: 0.95rem;
 }
 
-/* Game List */
 .game-list {
     display: flex;
     flex-direction: column;
@@ -336,7 +491,6 @@ body::before {
     font-size: 0.85rem;
 }
 
-/* Favorite List */
 .favorite-list {
     display: flex;
     flex-direction: column;
@@ -381,7 +535,6 @@ body::before {
     margin-bottom: 0.5rem;
 }
 
-/* Activity List */
 .activity-list {
     display: flex;
     flex-direction: column;
@@ -522,5 +675,22 @@ body::before {
     
     .dashboard-container {
         padding: 0 1rem 1rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .login-container {
+        padding: 2rem;
+        margin: 1rem;
+        border-radius: 20px;
+    }
+    
+    .content-title {
+        font-size: 1.75rem;
+    }
+    
+    .steam-button {
+        padding: 0.875rem 1.25rem;
+        font-size: 1rem;
     }
 }

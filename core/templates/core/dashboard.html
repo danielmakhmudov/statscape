@@ -4,24 +4,28 @@
 {% block content %}
 <div class="dashboard-container">
     <!-- User Profile Card -->
-    <div class="profile-card">
+    <div class="profile-card container">
         <div class="profile-avatar">DM</div>
         <div class="profile-info">
             <h2 class="profile-name">Danil Makhmudov</h2>
-            <p class="profile-since">Steam user since 12.01.2023</p>
+            <p class="profile-since">Steam пользователь с 12.01.2023</p>
         </div>
         <div class="profile-stats">
             <div class="stat-item">
                 <div class="stat-value">1,560</div>
-                <div class="stat-label">Total hours</div>
+                <div class="stat-label">Общих часов</div>
             </div>
             <div class="stat-item">
                 <div class="stat-value">25</div>
-                <div class="stat-label">Games in library</div>
+                <div class="stat-label">Игр в библиотеке</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">18</div>
+                <div class="stat-label">Завершенных игр</div>
             </div>
             <div class="stat-item">
                 <div class="stat-value">7</div>
-                <div class="stat-label">Unfinished games</div>
+                <div class="stat-label">Незавершенных игр</div>
             </div>
         </div>
     </div>
@@ -32,28 +36,28 @@
         <div class="dashboard-left">
             <!-- Playtime Distribution -->
             <div class="card">
-                <h3 class="card-title">Playtime by Game</h3>
+                <h3 class="card-title">Распределение времени по играм</h3>
                 <div class="chart-placeholder">
                     <div class="chart-legend">
                         <div class="legend-item">
                             <span class="legend-color" style="background: #f59e0b;"></span>
-                            <span class="legend-text">Game 1 - 45% (702 h)</span>
+                            <span class="legend-text">CS:GO - 45% (702 ч)</span>
                         </div>
                         <div class="legend-item">
                             <span class="legend-color" style="background: #3b82f6;"></span>
-                            <span class="legend-text">Game 2 - 25% (390 h)</span>
+                            <span class="legend-text">Dota 2 - 25% (390 ч)</span>
                         </div>
                         <div class="legend-item">
                             <span class="legend-color" style="background: #ec4899;"></span>
-                            <span class="legend-text">Game 3 - 15% (234 h)</span>
+                            <span class="legend-text">Cyberpunk 2077 - 15% (234 ч)</span>
                         </div>
                         <div class="legend-item">
                             <span class="legend-color" style="background: #8b5cf6;"></span>
-                            <span class="legend-text">Game 4 - 10% (156 h)</span>
+                            <span class="legend-text">GTA V - 10% (156 ч)</span>
                         </div>
                         <div class="legend-item">
                             <span class="legend-color" style="background: #84cc16;"></span>
-                            <span class="legend-text">Other - 5% (78 h)</span>
+                            <span class="legend-text">Другие - 5% (78 ч)</span>
                         </div>
                     </div>
                 </div>
@@ -62,43 +66,43 @@
             <!-- Unfinished Games -->
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Potential unfinished games</h3>
-                    <button class="btn-view-all">View all</button>
+                    <h3 class="card-title">Потенциально незавершенные игры</h3>
+                    <button class="btn-view-all">Смотреть все</button>
                 </div>
                 <div class="game-list">
                     <div class="game-item">
-                        <div class="game-icon">Game1</div>
+                        <div class="game-icon">RDR</div>
                         <div class="game-info">
-                            <div class="game-name">Game 1</div>
+                            <div class="game-name">Red Dead Redemption 2</div>
                             <div class="game-progress">
                                 <div class="progress-bar">
                                     <div class="progress-fill" style="width: 65%;"></div>
                                 </div>
-                                <span class="progress-text">12.5 h • 2 weeks ago</span>
+                                <span class="progress-text">12.5 часа • Проходим игру: 2 недели назад</span>
                             </div>
                         </div>
                     </div>
                     <div class="game-item">
-                        <div class="game-icon">Game2</div>
+                        <div class="game-icon">W3</div>
                         <div class="game-info">
-                            <div class="game-name">Game 2</div>
+                            <div class="game-name">The Witcher 3</div>
                             <div class="game-progress">
                                 <div class="progress-bar">
                                     <div class="progress-fill" style="width: 45%;"></div>
                                 </div>
-                                <span class="progress-text">45.7 h • 1 week ago</span>
+                                <span class="progress-text">45.7 часа • Поставил на паузу: 1 неделю назад</span>
                             </div>
                         </div>
                     </div>
                     <div class="game-item">
-                        <div class="game-icon">Game3</div>
+                        <div class="game-icon">AC</div>
                         <div class="game-info">
-                            <div class="game-name">Game 3</div>
+                            <div class="game-name">Assassin's Creed Valhalla</div>
                             <div class="game-progress">
                                 <div class="progress-bar">
                                     <div class="progress-fill" style="width: 30%;"></div>
                                 </div>
-                                <span class="progress-text">8.1 h • 2 weeks ago</span>
+                                <span class="progress-text">8.1 часа • Последний игра: 2 недели назад</span>
                             </div>
                         </div>
                     </div>
@@ -111,35 +115,35 @@
             <!-- Favorite Games -->
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Favorite games</h3>
-                    <button class="btn-view-all">View all</button>
+                    <h3 class="card-title">Любимые игры</h3>
+                    <button class="btn-view-all">Смотреть все</button>
                 </div>
                 <div class="favorite-list">
                     <div class="favorite-item">
-                        <div class="favorite-icon">Game1</div>
+                        <div class="favorite-icon">CS</div>
                         <div class="favorite-info">
-                            <div class="favorite-name">Game 1</div>
-                            <div class="favorite-time">702.4 h</div>
+                            <div class="favorite-name">Counter-Strike: GO</div>
+                            <div class="favorite-time">702.4 часа • 188 сессий</div>
                             <div class="progress-bar">
                                 <div class="progress-fill" style="width: 90%;"></div>
                             </div>
                         </div>
                     </div>
                     <div class="favorite-item">
-                        <div class="favorite-icon">Game2</div>
+                        <div class="favorite-icon">D2</div>
                         <div class="favorite-info">
-                            <div class="favorite-name">Game 2</div>
-                            <div class="favorite-time">390.1 h</div>
+                            <div class="favorite-name">Dota 2</div>
+                            <div class="favorite-time">390.1 часа • 88 сессий</div>
                             <div class="progress-bar">
                                 <div class="progress-fill" style="width: 65%;"></div>
                             </div>
                         </div>
                     </div>
                     <div class="favorite-item">
-                        <div class="favorite-icon">Game3</div>
+                        <div class="favorite-icon">CP</div>
                         <div class="favorite-info">
-                            <div class="favorite-name">Game 3</div>
-                            <div class="favorite-time">234.7 h</div>
+                            <div class="favorite-name">Cyberpunk 2077</div>
+                            <div class="favorite-time">234.7 часа • 54 сессий</div>
                             <div class="progress-bar">
                                 <div class="progress-fill" style="width: 45%;"></div>
                             </div>
@@ -150,27 +154,27 @@
 
             <!-- Recent Activity -->
             <div class="card">
-                <h3 class="card-title">Recent activity</h3>
+                <h3 class="card-title">Недавняя активность</h3>
                 <div class="activity-list">
                     <div class="activity-item">
-                        <div class="activity-icon">Game1</div>
+                        <div class="activity-icon">CS</div>
                         <div class="activity-info">
-                            <div class="activity-name">Game 1</div>
-                            <div class="activity-time">Today</div>
+                            <div class="activity-name">Counter-Strike: GO</div>
+                            <div class="activity-time">Сегодня: 2-3 часа</div>
                         </div>
                     </div>
                     <div class="activity-item">
-                        <div class="activity-icon">Game2</div>
+                        <div class="activity-icon">D2</div>
                         <div class="activity-info">
-                            <div class="activity-name">Game 2</div>
-                            <div class="activity-time">Yesterday</div>
+                            <div class="activity-name">Dota 2</div>
+                            <div class="activity-time">Вчера: 1.8 часа</div>
                         </div>
                     </div>
                     <div class="activity-item">
-                        <div class="activity-icon">Game3</div>
+                        <div class="activity-icon">CP</div>
                         <div class="activity-info">
-                            <div class="activity-name">Game3</div>
-                            <div class="activity-time">2 days ago</div>
+                            <div class="activity-name">Cyberpunk 2077</div>
+                            <div class="activity-time">2 дня назад: 4.2 часа</div>
                         </div>
                     </div>
                 </div>
