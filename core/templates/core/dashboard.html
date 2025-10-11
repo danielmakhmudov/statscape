@@ -5,9 +5,11 @@
 <div class="dashboard-container">
     <!-- User Profile Card -->
     <div class="profile-card container">
-        <div class="profile-avatar">DM</div>
+        <div class="profile-avatar">
+            <img src="{{ user.avatar_url }}">
+        </div>
         <div class="profile-info">
-            <h2 class="profile-name">Danil Makhmudov</h2>
+            <h2 class="profile-name">{{user.nickname}}</h2>
             <p class="profile-since">Steam пользователь с 12.01.2023</p>
         </div>
         <div class="profile-stats">
