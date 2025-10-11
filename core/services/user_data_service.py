@@ -17,6 +17,7 @@ def get_or_fetch_user_profile(steam_id):
         user_profile = User.objects.create(
             steam_id=user_data.get("steamid"),
             nickname=user_data.get("personaname"),
+            realname=user_data.get("realname"),
             avatar_url=user_data.get("avatarfull"),
         )
 

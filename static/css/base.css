@@ -303,7 +303,7 @@ body:has(.login-container) .main-content {
 .profile-avatar img {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* Масштабирует изображение с сохранением пропорций */
+    object-fit: cover; 
 }
 
 .profile-info {
@@ -314,8 +314,16 @@ body:has(.login-container) .main-content {
     font-size: 1.5rem;
     font-weight: 700;
     margin-bottom: 0.25rem;
+    line-height: 1.2;
 }
 
+.profile-realname {
+    color: #64748b;
+    font-size: 0.95rem;
+    font-weight: 400;
+    margin-bottom: 0.5rem;
+    opacity: 0.8;
+}
 .profile-since {
     color: #94a3b8;
     font-size: 0.9rem;
