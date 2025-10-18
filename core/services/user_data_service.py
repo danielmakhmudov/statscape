@@ -3,6 +3,9 @@ from users.models import User
 from core.models import UserGame, Game
 from django.db import transaction
 from datetime import datetime, timezone as dt_timezone
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def get_or_fetch_user_profile(steam_id):
@@ -24,14 +27,14 @@ def get_or_fetch_user_profile(steam_id):
         return user_profile
 
 
-def fetch_or_get_user_library(steam_id):
+def get_or_fetch_user_library(steam_id):
     try:
         user = User.objects.get(steam_id=steam_id)
     except User.DoesNotExist:
         return None
 
     user_games = UserGame.objects.filter(user=user)
-    if user_games.exists():
+    if user_games:
         print("got data from db")
         return user_games
 
@@ -45,6 +48,7 @@ def fetch_or_get_user_library(steam_id):
         for g in games:
             app_id = g.get("appid")
             if not app_id:
+                logger.warning(f"Skipped game without appid : {g.get('name', 'Unknown')}")
                 continue
 
             app_id = str(app_id)
