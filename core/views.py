@@ -1,5 +1,5 @@
 from django.views.generic import TemplateView
-from core.services.user_data_service import get_or_fetch_user_profile
+from core.services.user_data_service import get_or_fetch_user_profile, get_or_fetch_user_library
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 
@@ -13,7 +13,9 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
         social = self.request.user.social_auth.get(provider="steam")
         steam_id = social.uid
-        user_data = get_or_fetch_user_profile(steam_id=steam_id)
+        user_profile = get_or_fetch_user_profile(steam_id=steam_id)
+        user_library = get_or_fetch_user_library(steam_id=steam_id)
 
-        context["user_data"] = user_data
+        context["user_profile"] = user_profile
+        context["user_library"] = user_library
         return context
