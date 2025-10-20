@@ -16,6 +16,11 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         user_profile = get_or_fetch_user_profile(steam_id=steam_id)
         user_library = get_or_fetch_user_library(steam_id=steam_id)
 
-        context["user_profile"] = user_profile
-        context["user_library"] = user_library
+        context.update(
+            {
+                "user_profile": user_profile,
+                "user_library": user_library,
+                "games_count": len(user_library),
+            }
+        )
         return context
