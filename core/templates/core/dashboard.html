@@ -9,8 +9,9 @@
             <img src="{{ user.avatar_url }}">
         </div>
         <div class="profile-info">
-            <h2 class="profile-name">{{user.nickname}}</h2>
-            <p class="profile-realname">{{user.realname}}</p>
+            <h2 class="profile-name">{{user_profile.nickname}}</h2>
+            <h2 class="profile-name">{{user_profile.nickname}}</h2>
+            <p class="profile-realname">{{user_profile.realname}}</p>
             <p class="profile-since">Steam пользователь с 12.01.2023</p>
         </div>
         <div class="profile-stats">
@@ -19,7 +20,7 @@
                 <div class="stat-label">Общих часов</div>
             </div>
             <div class="stat-item">
-                <div class="stat-value">25</div>
+                <div class="stat-value">{{games_count}}</div>
                 <div class="stat-label">Игр в библиотеке</div>
             </div>
             <div class="stat-item">
