@@ -1,5 +1,6 @@
 from django.views.generic import TemplateView
 from core.services.user_data_service import get_or_fetch_user_profile, get_or_fetch_user_library
+from core.services.stats_service import get_account_total_hours
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 
@@ -21,6 +22,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                 "user_profile": user_profile,
                 "user_library": user_library,
                 "games_count": len(user_library),
+                "total_hours": get_account_total_hours(steam_id),
             }
         )
         return context
