@@ -1,0 +1,43 @@
+# Virtual environment
+.venv/
+
+# Python and Django
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.log
+media/
+staticfiles/
+
+# Distribution / Packaging
+dist/
+build/
+*.egg-info/
+*.egg
+
+# Environment files
+.env*
+
+# IDE and editor configurations
+.vscode/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Database files 
+*.sql
+*.db
+*.dump
+*.pgdump
+
+# Logs and temporary database files
+*.pid
+*.log
+*.log.*
+
+# Cached files for Django
+*.swp
+*.bak
