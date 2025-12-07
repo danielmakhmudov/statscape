@@ -6,6 +6,6 @@ def get_account_total_playtime(steam_id):
     if not games:
         return 0.0
 
-    total_minutes = sum(g.total_playtime for g in games)
+    account_total_playtime = sum(g.total_playtime for g in games)
 
-    return total_minutes
+    return account_total_playtime
