@@ -27,22 +27,22 @@ def get_or_fetch_user_profile(steam_id):
         return user_profile
 
 
-def get_or_fetch_user_library(steam_id):
+def get_or_fetch_user_library(steam_id, force_update=False):
     try:
         user = User.objects.get(steam_id=steam_id)
     except User.DoesNotExist:
-        return None
+        return UserGame.objects.none()
 
-    user_games = UserGame.objects.filter(user=user)
-    if user_games:
-        print("got data from db")
-        return user_games
+    if not force_update:
+        user_games = UserGame.objects.filter(user=user)
+        if user_games.exists():
+            return user_games
 
     steam_api = SteamAPI()
     data = steam_api.get_user_library(steam_id=user.steam_id)
     games = data.get("games") if isinstance(data, dict) else None
     if not games:
-        return None
+        return UserGame.objects.none()
 
     with transaction.atomic():
         for g in games:
@@ -52,7 +52,6 @@ def get_or_fetch_user_library(steam_id):
                 continue
 
             app_id = str(app_id)
-
             name = g.get("name") or ""
             img_logo = g.get("img_icon_url")
             logo_url = (
@@ -76,11 +75,13 @@ def get_or_fetch_user_library(steam_id):
                 },
             )
 
-            UserGame.objects.create(
+            UserGame.objects.update_or_create(
                 user=user,
                 game=game,
-                total_playtime=total_playtime,
-                recent_playtime=recent_playtime,
-                last_played=last_played,
+                defaults={
+                    "total_playtime": total_playtime,
+                    "recent_playtime": recent_playtime,
+                    "last_played": last_played,
+                },
             )
-    return UserGame.objects.filter(user=user)
+    return UserGame.objects.filter(user=user).select_related("game")
