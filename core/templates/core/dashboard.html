@@ -38,22 +38,12 @@
                 <h3 class="card-title">Time spent by game</h3>
                 <div class="chart-placeholder">
                     <div class="chart-legend">
-                        <div class="legend-item">
-                            <span class="legend-color" style="background: #f59e0b;"></span>
-                            <span class="legend-text">CS:GO - 45% (702 h)</span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-color" style="background: #3b82f6;"></span>
-                            <span class="legend-text">Dota 2 - 25% (390 h)</span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-color" style="background: #ec4899;"></span>
-                            <span class="legend-text">Cyberpunk 2077 - 15% (234 h)</span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-color" style="background: #8b5cf6;"></span>
-                            <span class="legend-text">GTA V - 10% (156 h)</span>
-                        </div>
+                        {% for game in user_library|slice:":10" %}
+                            <div class="legend-item">
+                                <span class="legend-color" style="background: #84cc16;"></span>
+                                <span class="legend-text">{{game.game.name}} - {{game.playtime_percentage}}% ({{game.playtime_hours}} h)</span>
+                            </div>
+                        {% endfor %}
                         <div class="legend-item">
                             <span class="legend-color" style="background: #84cc16;"></span>
                             <span class="legend-text">Others - 5% (78 h)</span>

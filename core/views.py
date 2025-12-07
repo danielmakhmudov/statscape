@@ -1,6 +1,6 @@
 from django.views.generic import TemplateView
 from core.services.user_data_service import get_or_fetch_user_profile, get_or_fetch_user_library
-from core.services.stats_service import get_account_total_hours
+from core.services.stats_service import enrich_games_with_stats
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 
@@ -17,12 +17,13 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         user_profile = get_or_fetch_user_profile(steam_id=steam_id)
         user_library = get_or_fetch_user_library(steam_id=steam_id)
 
+        user_library, total_hours = enrich_games_with_stats(user_library)
         context.update(
             {
                 "user_profile": user_profile,
                 "user_library": user_library,
                 "games_count": len(user_library),
-                "total_hours": get_account_total_hours(steam_id),
+                "total_hours": total_hours,
             }
         )
         return context
