@@ -36,18 +36,11 @@
             <!-- Playtime Distribution -->
             <div class="card">
                 <h3 class="card-title">Time spent by game</h3>
+                <canvas id="playtime-doughnut" width="400" height="250"></canvas>
+                {{chart_labels|json_script:"chart_labels" }}
+                {{chart_values|json_script:"chart_values" }}
                 <div class="chart-placeholder">
-                    <div class="chart-legend">
-                        {% for game in user_library|slice:":10" %}
-                            <div class="legend-item">
-                                <span class="legend-color" style="background: #84cc16;"></span>
-                                <span class="legend-text">{{game.game.name}} - {{game.playtime_percentage}}% ({{game.playtime_hours}} h)</span>
-                            </div>
-                        {% endfor %}
-                        <div class="legend-item">
-                            <span class="legend-color" style="background: #84cc16;"></span>
-                            <span class="legend-text">Others - 5% (78 h)</span>
-                        </div>
+                    <div class="chart-legend"> 
                     </div>
                 </div>
             </div>
@@ -172,3 +165,39 @@
     </div>
 </div>
 {% endblock %}
+
+{%block extra_js%}
+  <script src="{% static 'js/chart.js' %}"></script>
+<script>
+    const labels = JSON.parse(document.getElementById('chart_labels').textContent);
+    const values = JSON.parse(document.getElementById('chart_values').textContent);
+
+    const palette = [
+    '#4ade80','#22c55e','#16a34a','#15803d','#facc15',
+    '#fb923c','#f97316','#ef4444','#8b5cf6','#6366f1','#94a3b8'
+    ];
+
+    const ctx = document.getElementById('playtime-doughnut');
+    new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+        labels,
+        datasets: [{
+        data: values,
+        backgroundColor: labels.map((_, i) => palette[i % palette.length]),
+        borderWidth: 1,
+        }]
+    },
+    options: {
+        plugins: {
+        legend: { position: 'right' },
+        tooltip: {
+            callbacks: {
+            label: (context) => `${context.label}: ${context.parsed}%`
+            }
+        }
+        }
+    }
+    });
+</script>
+{%endblock%}

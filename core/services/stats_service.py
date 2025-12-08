@@ -10,3 +10,17 @@ def enrich_games_with_stats(games):
         g.playtime_hours = round(g.total_playtime / 60, 1)
     games = sorted(games, key=lambda x: x.total_playtime, reverse=True)
     return games, total_hours
+
+
+def get_chart_data(games):
+    top_games = games[:10]
+    others = games[10:]
+    others_playtime_percentage = sum(g.playtime_percentage for g in others)
+    chart_labels = [g.game.name for g in top_games]
+    chart_values = [g.playtime_percentage for g in top_games]
+
+    if others_playtime_percentage > 0:
+        chart_labels.append("Others")
+        chart_values.append(others_playtime_percentage)
+
+    return chart_labels, chart_values
