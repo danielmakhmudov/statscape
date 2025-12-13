@@ -39,6 +39,7 @@
                 <canvas id="playtime-doughnut" width="400" height="250"></canvas>
                 {{chart_labels|json_script:"chart_labels" }}
                 {{chart_values|json_script:"chart_values" }}
+                {{chart_hours|json_script:"chart_hours" }}
                 <div class="chart-placeholder">
                     <div class="chart-legend"> 
                     </div>
@@ -171,6 +172,7 @@
 <script>
     const labels = JSON.parse(document.getElementById('chart_labels').textContent);
     const values = JSON.parse(document.getElementById('chart_values').textContent);
+    const hours = JSON.parse(document.getElementById('chart_hours').textContent);
 
     const palette = [
     '#4ade80','#22c55e','#16a34a','#15803d','#facc15',
@@ -193,7 +195,10 @@
         legend: { position: 'right' },
         tooltip: {
             callbacks: {
-            label: (context) => `${context.label}: ${context.parsed}%`
+                label: (context) => {
+                const hoursValue = hours[context.dataIndex];
+                return `${context.parsed}%(${hoursValue}h)`;
+            }
             }
         }
         }

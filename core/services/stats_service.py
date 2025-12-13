@@ -18,9 +18,12 @@ def get_chart_data(games):
     others_playtime_percentage = sum(g.playtime_percentage for g in others)
     chart_labels = [g.game.name for g in top_games]
     chart_values = [g.playtime_percentage for g in top_games]
+    chart_hours = [g.playtime_hours for g in top_games]
 
     if others_playtime_percentage > 0:
+        others_hours = sum(g.playtime_hours for g in others)
         chart_labels.append("Others")
         chart_values.append(others_playtime_percentage)
+        chart_hours.append(others_hours)
 
-    return chart_labels, chart_values
+    return chart_labels, chart_values, chart_hours

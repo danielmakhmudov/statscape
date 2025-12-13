@@ -18,7 +18,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         user_library = get_or_fetch_user_library(steam_id=steam_id)
 
         user_library, total_hours = enrich_games_with_stats(user_library)
-        chart_labels, chart_values = get_chart_data(user_library)
+        chart_labels, chart_values, chart_hours = get_chart_data(user_library)
         context.update(
             {
                 "user_profile": user_profile,
@@ -27,6 +27,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                 "total_hours": total_hours,
                 "chart_labels": chart_labels,
                 "chart_values": chart_values,
+                "chart_hours": chart_hours,
             }
         )
         return context
