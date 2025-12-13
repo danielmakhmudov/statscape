@@ -17,11 +17,17 @@ def get_or_fetch_user_profile(steam_id):
         if not user_data:
             return None
 
+        timecreated = user_data.get("timecreated")
+        steam_user_since = (
+            datetime.fromtimestamp(int(timecreated), tz=dt_timezone.utc) if timecreated else None
+        )
+
         user_profile = User.objects.create(
             steam_id=user_data.get("steamid"),
             nickname=user_data.get("personaname"),
             realname=user_data.get("realname"),
             avatar_url=user_data.get("avatarfull"),
+            steam_user_since=steam_user_since,
         )
 
         return user_profile
