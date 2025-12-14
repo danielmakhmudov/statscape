@@ -310,11 +310,54 @@ body:has(.login-container) .main-content {
     flex: 1;
 }
 
+.profile-name-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.25rem;
+}
+
 .profile-name {
     font-size: 1.5rem;
     font-weight: 700;
-    margin-bottom: 0.25rem;
     line-height: 1.2;
+    margin: 0;
+}
+
+.update-form {
+    display: inline-flex;
+    margin: 0;
+}
+
+.btn-update {
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 8px;
+    padding: 0.5rem;
+    color: #60a5fa;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+}
+
+.btn-update:hover {
+    background: rgba(59, 130, 246, 0.2);
+    transform: rotate(180deg);
+    border-color: rgba(59, 130, 246, 0.4);
+}
+
+.btn-update:active {
+    transform: rotate(180deg) scale(0.95);
+}
+
+.btn-update svg {
+    width: 18px;
+    height: 18px;
 }
 
 .profile-realname {
@@ -676,6 +719,10 @@ body:has(.login-container) .main-content {
     .profile-card {
         flex-direction: column;
         text-align: center;
+    }
+    
+    .profile-name-row {
+        justify-content: center;
     }
     
     .profile-stats {

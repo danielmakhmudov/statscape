@@ -9,7 +9,20 @@
             <img src="{{ user.avatar_url }}">
         </div>
         <div class="profile-info">
-            <h2 class="profile-name">{{user_profile.nickname}}</h2>
+            <div class="profile-name-row">
+                <h2 class="profile-name">{{user_profile.nickname}}</h2>
+                <form method="post" action="{% url 'update_user_data' %}" class="update-form">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-update" title="Update user data">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21.5 2v6h-6"/>
+                            <path d="M2.5 22v-6h6"/>
+                            <path d="M2 11.5C2 6.3 6.3 2 11.5 2c3.1 0 5.8 1.5 7.5 3.8"/>
+                            <path d="M22 12.5c0 5.2-4.3 9.5-9.5 9.5-3.1 0-5.8-1.5-7.5-3.8"/>
+                        </svg>
+                    </button>
+                </form>
+            </div>
             <p class="profile-realname">{{user_profile.realname}}</p>
             <p class="profile-since">{{user_profile.steam_user_since}}</p>
         </div>
@@ -204,5 +217,25 @@
         }
     }
     });
+
+    // Update button loading state
+    const updateForm = document.querySelector('.update-form');
+    const updateButton = document.querySelector('.btn-update');
+    
+    if (updateForm && updateButton) {
+        updateForm.addEventListener('submit', function(e) {
+            updateButton.disabled = true;
+            updateButton.style.opacity = '0.6';
+            updateButton.style.cursor = 'wait';
+            updateButton.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>';
+            updateButton.querySelector('svg').style.animation = 'spin 1s linear infinite';
+        });
+    }
 </script>
+<style>
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+</style>
 {%endblock%}
