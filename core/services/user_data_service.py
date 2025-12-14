@@ -33,6 +33,34 @@ def get_or_fetch_user_profile(steam_id):
         return user_profile
 
 
+def update_user_data(steam_id):
+    steam_api = SteamAPI()
+    user_data = steam_api.get_user_profile(steam_id)
+    if user_data:
+        try:
+            user = User.objects.get(steam_id=steam_id)
+            timecreated = user_data.get("timecreated")
+            steam_user_since = (
+                datetime.fromtimestamp(int(timecreated), tz=dt_timezone.utc)
+                if timecreated
+                else None
+            )
+
+            user.nickname = user_data.get("personaname")
+            user.realname = user_data.get("realname")
+            user.avatar_url = user_data.get("avatarfull")
+            user.steam_user_since = steam_user_since
+            user.save()
+
+            get_or_fetch_user_library(steam_id, force_update=True)
+            return user
+
+        except User.DoesNotExist:
+            logger.warning(f"User with steam_id {steam_id} not found for update")
+            return None
+    return None
+
+
 def get_or_fetch_user_library(steam_id, force_update=False):
     try:
         user = User.objects.get(steam_id=steam_id)

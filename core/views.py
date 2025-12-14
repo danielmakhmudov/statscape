@@ -1,5 +1,10 @@
-from django.views.generic import TemplateView
-from core.services.user_data_service import get_or_fetch_user_profile, get_or_fetch_user_library
+from django.shortcuts import redirect
+from django.views.generic import TemplateView, View
+from core.services.user_data_service import (
+    get_or_fetch_user_profile,
+    get_or_fetch_user_library,
+    update_user_data,
+)
 from core.services.stats_service import enrich_games_with_stats, get_chart_data
 from django.contrib.auth.mixins import LoginRequiredMixin
 
@@ -12,8 +17,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        social = self.request.user.social_auth.get(provider="steam")
-        steam_id = social.uid
+        steam_id = self.request.user.social_auth.get(provider="steam").uid
         user_profile = get_or_fetch_user_profile(steam_id=steam_id)
         user_library = get_or_fetch_user_library(steam_id=steam_id)
 
@@ -31,3 +35,16 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             }
         )
         return context
+
+
+class UpdateUserDataView(LoginRequiredMixin, View):
+    login_url = "/login/"
+    redirect_field_name = "next"
+
+    def post(self, request, *args, **kwargs):
+        steam_id = request.user.social_auth.get(provider="steam").uid
+        update_user_data(steam_id)
+        return redirect("dashboard")
+
+    def get(self, request, *args, **kwargs):
+        return self.post(request, *args, **kwargs)
