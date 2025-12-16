@@ -564,16 +564,22 @@ body:has(.login-container) .main-content {
 }
 
 .favorite-icon {
-    width: 48px;
-    height: 48px;
-    background: linear-gradient(135deg, #84cc16, #65a30d);
+    width: 45px;
+    height: 45px;
+    background: rgba(15, 23, 42, 0.5);
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 700;
-    font-size: 0.9rem;
+    overflow: hidden;
     flex-shrink: 0;
+    border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.favorite-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .favorite-info {
@@ -583,13 +589,14 @@ body:has(.login-container) .main-content {
 .favorite-name {
     font-weight: 600;
     font-size: 0.95rem;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
 }
 
 .favorite-time {
     color: #94a3b8;
     font-size: 0.85rem;
     margin-bottom: 0.5rem;
+    line-height: 1.4;
 }
 
 .activity-list {

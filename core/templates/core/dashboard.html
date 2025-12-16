@@ -115,36 +115,19 @@
                     <button class="btn-view-all">View all</button>
                 </div>
                 <div class="favorite-list">
-                    <div class="favorite-item">
-                        <div class="favorite-icon">CS</div>
-                        <div class="favorite-info">
-                            <div class="favorite-name">Counter-Strike: GO</div>
-                            <div class="favorite-time">702.4 h</div>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 90%;"></div>
+                    {%for g in favorite_games%}
+                        <div class="favorite-item">
+                            <div class="favorite-icon"><img src="{{ g.game.logo_url }}" alt="{{ g.game.name }}"></div>
+                            <div class="favorite-info">
+                                <div class="favorite-name">{{g.game.name}}</div>
+                                <div class="favorite-time">
+                                    Total: {{g.playtime_hours}}h • 
+                                    Recent: {{g.recent_playtime_hours}}h • 
+                                    Last played: {% if g.last_played %}{{ g.last_played|timesince }} ago{% else %}Never{% endif %}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="favorite-item">
-                        <div class="favorite-icon">D2</div>
-                        <div class="favorite-info">
-                            <div class="favorite-name">Dota 2</div>
-                            <div class="favorite-time">390.1 h</div>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 65%;"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="favorite-item">
-                        <div class="favorite-icon">CP</div>
-                        <div class="favorite-info">
-                            <div class="favorite-name">Cyberpunk 2077</div>
-                            <div class="favorite-time">234.7 h</div>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 45%;"></div>
-                            </div>
-                        </div>
-                    </div>
+                    {%endfor%}
                 </div>
             </div>
 

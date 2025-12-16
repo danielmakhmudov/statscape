@@ -8,6 +8,7 @@ def enrich_games_with_stats(games):
             round(g.total_playtime / total_playtime * 100, 1) if total_playtime > 0 else 0
         )
         g.playtime_hours = round(g.total_playtime / 60, 1)
+        g.recent_playtime_hours = round(g.recent_playtime / 60, 1)
     games = sorted(games, key=lambda x: x.total_playtime, reverse=True)
     return games, total_hours
 
@@ -27,3 +28,9 @@ def get_chart_data(games):
         chart_hours.append(others_hours)
 
     return chart_labels, chart_values, chart_hours
+
+
+def get_favorite_games(games):
+    if not games:
+        return []
+    return games[:5]
