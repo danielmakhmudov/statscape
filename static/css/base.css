@@ -548,6 +548,59 @@ body:has(.login-container) .main-content {
     font-size: 0.85rem;
 }
 
+/* Shared styles for game lists (favorite games, recent games, etc.) */
+.game-list-item {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    background: rgba(15, 23, 42, 0.5);
+    border-radius: 12px;
+    border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.game-list-item-icon {
+    width: 45px;
+    height: 45px;
+    background: rgba(15, 23, 42, 0.5);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.game-list-item-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.game-list-item-info {
+    flex: 1;
+}
+
+.game-list-item-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+}
+
+.game-list-item-time {
+    color: #94a3b8;
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+}
+
+.game-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* Legacy support - keep favorite-* classes for backward compatibility */
 .favorite-list {
     display: flex;
     flex-direction: column;

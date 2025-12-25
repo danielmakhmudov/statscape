@@ -5,7 +5,12 @@ from core.services.user_data_service import (
     get_or_fetch_user_library,
     update_user_data,
 )
-from core.services.stats_service import enrich_games_with_stats, get_chart_data, get_favorite_games
+from core.services.stats_service import (
+    enrich_games_with_stats,
+    get_chart_data,
+    get_favorite_games,
+    get_prepared_recently_played_games,
+)
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 
@@ -24,6 +29,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         user_library, total_hours = enrich_games_with_stats(user_library)
         chart_labels, chart_values, chart_hours = get_chart_data(user_library)
         favorite_games = get_favorite_games(user_library)
+        recent_games = get_prepared_recently_played_games(user_library)
         context.update(
             {
                 "user_profile": user_profile,
@@ -34,6 +40,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                 "chart_values": chart_values,
                 "chart_hours": chart_hours,
                 "favorite_games": favorite_games,
+                "recent_games": recent_games,
             }
         )
         return context

@@ -114,13 +114,13 @@
                     <h3 class="card-title">Favorite games</h3>
                     <button class="btn-view-all">View all</button>
                 </div>
-                <div class="favorite-list">
+                <div class="game-list">
                     {%for g in favorite_games%}
-                        <div class="favorite-item">
-                            <div class="favorite-icon"><img src="{{ g.game.logo_url }}" alt="{{ g.game.name }}"></div>
-                            <div class="favorite-info">
-                                <div class="favorite-name">{{g.game.name}}</div>
-                                <div class="favorite-time">
+                        <div class="game-list-item">
+                            <div class="game-list-item-icon"><img src="{{ g.game.logo_url }}" alt="{{ g.game.name }}"></div>
+                            <div class="game-list-item-info">
+                                <div class="game-list-item-name">{{g.game.name}}</div>
+                                <div class="game-list-item-time">
                                     Total: {{g.playtime_hours}}h • 
                                     Recent: {{g.recent_playtime_hours}}h • 
                                     Last played: {% if g.last_played %}{{ g.last_played|timesince }} ago{% else %}Never{% endif %}
@@ -133,29 +133,23 @@
 
             <!-- Recent Activity -->
             <div class="card">
-                <h3 class="card-title">Recent activity</h3>
-                <div class="activity-list">
-                    <div class="activity-item">
-                        <div class="activity-icon">CS</div>
-                        <div class="activity-info">
-                            <div class="activity-name">Counter-Strike: GO</div>
-                            <div class="activity-time">Today</div>
+                <div class="card-header">
+                    <h3 class="card-title">Recent activity</h3>
+                </div>
+                <div class="game-list">
+                    {%for g in recent_games%}
+                        <div class="game-list-item">
+                            <div class="game-list-item-icon"><img src="{{ g.game.logo_url }}" alt="{{ g.game.name }}"></div>
+                            <div class="game-list-item-info">
+                                <div class="game-list-item-name">{{g.game.name}}</div>
+                                <div class="game-list-item-time">
+                                    Last played: {% if g.last_played %}{{ g.last_played|timesince }} ago{% else %}Never{% endif %} •
+                                    Recent: {{g.recent_playtime_hours}}h •
+                                    Total: {{g.playtime_hours}}h  
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="activity-item">
-                        <div class="activity-icon">D2</div>
-                        <div class="activity-info">
-                            <div class="activity-name">Dota 2</div>
-                            <div class="activity-time">Yesterday</div>
-                        </div>
-                    </div>
-                    <div class="activity-item">
-                        <div class="activity-icon">CP</div>
-                        <div class="activity-info">
-                            <div class="activity-name">Cyberpunk 2077</div>
-                            <div class="activity-time">2 days ago</div>
-                        </div>
-                    </div>
+                    {%endfor%}
                 </div>
             </div>
         </div>

@@ -1,3 +1,6 @@
+import heapq
+
+
 def enrich_games_with_stats(games):
     if not games:
         return [], 0.0
@@ -34,3 +37,11 @@ def get_favorite_games(games):
     if not games:
         return []
     return games[:5]
+
+
+def get_prepared_recently_played_games(games):
+    if not games:
+        return []
+
+    games_with_date = (g for g in games if g.last_played is not None)
+    return heapq.nlargest(5, games_with_date, key=lambda x: x.last_played)
