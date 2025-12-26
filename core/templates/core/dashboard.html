@@ -39,6 +39,10 @@
                 <div class="stat-value">7</div>
                 <div class="stat-label">Unfinished games</div>
             </div>
+            <div class="stat-item">
+                <div class="stat-value">{{not_played_games|length}}</div>
+                <div class="stat-label">Not played games</div>
+            </div>
         </div>
     </div>
 
@@ -102,6 +106,25 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Not played games</h3>
+                    <button class="btn-view-all">View all</button>
+                </div>
+                <div class="game-list">
+                    {%for g in not_played_games%}
+                        <div class="game-list-item">
+                            <div class="game-list-item-icon"><img src="{{ g.game.logo_url }}" alt="{{ g.game.name }}"></div>
+                            <div class="game-list-item-info">
+                                <div class="game-list-item-name">{{g.game.name}}</div>
+                                <div class="game-list-item-time">
+                                    Last played: {% if g.last_played %}{{ g.last_played|timesince }} ago{% else %}Never{% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {%endfor%}
                 </div>
             </div>
         </div>

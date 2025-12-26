@@ -45,3 +45,19 @@ def get_prepared_recently_played_games(games):
 
     games_with_date = (g for g in games if g.last_played is not None)
     return heapq.nlargest(5, games_with_date, key=lambda x: x.last_played)
+
+
+def get_not_played_games(games, limit=None):
+    if not games:
+        return games
+
+    if hasattr(games, "filter"):
+        queryset = games.filter(total_playtime=0)
+        if limit is not None:
+            queryset = queryset[:limit]
+        return queryset
+
+    not_played_games = [g for g in games if g.total_playtime == 0]
+    if limit is not None:
+        not_played_games = not_played_games[:limit]
+    return not_played_games
