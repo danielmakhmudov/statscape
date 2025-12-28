@@ -26,7 +26,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         steam_id = self.request.user.social_auth.get(provider="steam").uid
         user_profile = get_or_fetch_user_profile(steam_id=steam_id)
         user_library = get_or_fetch_user_library(steam_id=steam_id)
-        not_played_games = get_not_played_games(user_library, limit=5)
+        not_played_games, not_played_games_count = get_not_played_games(user_library, limit=5)
 
         user_library, total_hours = enrich_games_with_stats(user_library)
         chart_labels, chart_values, chart_hours = get_chart_data(user_library)
@@ -44,6 +44,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                 "favorite_games": favorite_games,
                 "recent_games": recent_games,
                 "not_played_games": not_played_games,
+                "not_played_games_count": not_played_games_count,
             }
         )
         return context

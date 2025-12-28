@@ -52,12 +52,15 @@ def get_not_played_games(games, limit=None):
         return games
 
     if hasattr(games, "filter"):
-        queryset = games.filter(total_playtime=0)
+        not_played_games = games.filter(total_playtime=0)
+        not_played_games_count = not_played_games.count()
         if limit is not None:
-            queryset = queryset[:limit]
-        return queryset
+            not_played_games = not_played_games[:limit]
+        return not_played_games, not_played_games_count
 
     not_played_games = [g for g in games if g.total_playtime == 0]
+    not_played_games_count = len(not_played_games)
+
     if limit is not None:
         not_played_games = not_played_games[:limit]
-    return not_played_games
+    return not_played_games, not_played_games_count
