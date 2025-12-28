@@ -64,3 +64,21 @@ def get_not_played_games(games, limit=None):
     if limit is not None:
         not_played_games = not_played_games[:limit]
     return not_played_games, not_played_games_count
+
+
+def get_potentially_not_completed_games(games, limit=None):
+    if not games:
+        return games
+
+    if hasattr(games, "filter"):
+        not_completed_games = games.filter(total_playtime__lte=600, total_playtime__gt=0)
+        not_completed_games_count = not_completed_games.count()
+        if limit is not None:
+            not_completed_games = not_completed_games[:limit]
+        return not_completed_games, not_completed_games_count
+
+    not_completed_games = [g for g in games if g.total_playtime <= 600 and g.total_playtime > 0]
+    not_completed_games_count = len(not_completed_games)
+    if limit is not None:
+        not_completed_games = not_completed_games[:limit]
+    return not_completed_games, not_completed_games_count

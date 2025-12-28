@@ -11,6 +11,7 @@ from core.services.stats_service import (
     get_favorite_games,
     get_prepared_recently_played_games,
     get_not_played_games,
+    get_potentially_not_completed_games,
 )
 from django.contrib.auth.mixins import LoginRequiredMixin
 
@@ -27,8 +28,10 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         user_profile = get_or_fetch_user_profile(steam_id=steam_id)
         user_library = get_or_fetch_user_library(steam_id=steam_id)
         not_played_games, not_played_games_count = get_not_played_games(user_library, limit=5)
-
         user_library, total_hours = enrich_games_with_stats(user_library)
+        not_completed_games, not_completed_games_count = get_potentially_not_completed_games(
+            user_library, limit=5
+        )
         chart_labels, chart_values, chart_hours = get_chart_data(user_library)
         favorite_games = get_favorite_games(user_library)
         recent_games = get_prepared_recently_played_games(user_library)
@@ -45,6 +48,8 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                 "recent_games": recent_games,
                 "not_played_games": not_played_games,
                 "not_played_games_count": not_played_games_count,
+                "not_completed_games": not_completed_games,
+                "not_completed_games_count": not_completed_games_count,
             }
         )
         return context
