@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/library.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="library-container">
+    <div class="library-header">
+        <h1 class="library-title">Game Library</h1>
+        <div class="library-stats">
+            <span class="library-stat-item">Total: <strong>150</strong></span>
+        </div>
+    </div>
+
+    <div class="library-grid">
+        {% for i in "1234567890123456789012345" %}
+        <div class="game-card">
+            <div class="game-card-image">
+                <div class="game-card-placeholder">
+                    <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                        <path d="M9 9h6v6H9z"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="game-card-content">
+                <h3 class="game-card-name">Game Title {{ forloop.counter }}</h3>
+                <div class="game-card-meta">
+                    <span class="game-card-hours">0h</span>
+                    <span class="game-card-status">Not played</span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
