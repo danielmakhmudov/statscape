@@ -77,23 +77,50 @@ def get_or_fetch_user_library(steam_id, force_update=False):
     games = data.get("games") if isinstance(data, dict) else None
     if not games:
         return UserGame.objects.none()
+    api_games_map = {}
+    for g in games:
+        app_id = g.get("appid")
+        if not app_id:
+            logger.warning(f"Skipped game without appid: {g.get('name', 'Unknown')}")
+            continue
+        api_games_map[str(app_id)] = g
+
+    if not api_games_map:
+        return UserGame.objects.none()
+
+    game_instances = []
+    for app_id, g in api_games_map.items():
+        name = g.get("name") or ""
+        img_logo = g.get("img_icon_url")
+        logo_url = (
+            f"https://media.steampowered.com/steamcommunity/public/images/apps/"
+            f"{app_id}/{img_logo}.jpg"
+            if img_logo
+            else None
+        )
+
+        game_instances.append(Game(app_id=app_id, name=name, logo_url=logo_url))
+    if not game_instances:
+        return UserGame.objects.none()
 
     with transaction.atomic():
-        for g in games:
-            app_id = g.get("appid")
-            if not app_id:
-                logger.warning(f"Skipped game without appid : {g.get('name', 'Unknown')}")
-                continue
+        Game.objects.bulk_create(
+            game_instances,
+            update_conflicts=True,
+            unique_fields=["app_id"],
+            update_fields=["name", "logo_url"],
+            batch_size=1000,
+        )
 
-            app_id = str(app_id)
-            name = g.get("name") or ""
-            img_logo = g.get("img_icon_url")
-            logo_url = (
-                f"https://media.steampowered.com/steamcommunity/public/images/apps/"
-                f"{app_id}/{img_logo}.jpg"
-                if img_logo
-                else None
-            )
+        games_in_db = Game.objects.filter(app_id__in=api_games_map.keys())
+        game_map = {g.app_id: g for g in games_in_db}
+
+        user_game_instances = []
+
+        for app_id, g in api_games_map.items():
+            game_obj = game_map.get(app_id)
+            if not game_obj:
+                continue
 
             total_playtime = g.get("playtime_forever", 0)
             recent_playtime = g.get("playtime_2weeks", 0)
@@ -101,21 +128,23 @@ def get_or_fetch_user_library(steam_id, force_update=False):
             rtime = g.get("rtime_last_played")
             last_played = datetime.fromtimestamp(int(rtime), tz=dt_timezone.utc) if rtime else None
 
-            game, _ = Game.objects.get_or_create(
-                app_id=app_id,
-                defaults={
-                    "name": name,
-                    "logo_url": logo_url,
-                },
+            user_game_instances.append(
+                UserGame(
+                    user=user,
+                    game=game_obj,
+                    total_playtime=total_playtime,
+                    recent_playtime=recent_playtime,
+                    last_played=last_played,
+                )
             )
+        if not user_game_instances:
+            return UserGame.objects.none()
 
-            UserGame.objects.update_or_create(
-                user=user,
-                game=game,
-                defaults={
-                    "total_playtime": total_playtime,
-                    "recent_playtime": recent_playtime,
-                    "last_played": last_played,
-                },
-            )
-    return UserGame.objects.filter(user=user).select_related("game")
+        UserGame.objects.bulk_create(
+            user_game_instances,
+            update_conflicts=True,
+            unique_fields=["user", "game"],
+            update_fields=["total_playtime", "recent_playtime", "last_played"],
+            batch_size=1000,
+        )
+        return UserGame.objects.filter(user=user).select_related("game")
