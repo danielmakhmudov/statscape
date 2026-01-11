@@ -1,5 +1,6 @@
 from .models import User
 from core.services.steam_api_service import SteamAPI
+from core.services.user_data_service import update_user_data
 
 steam_api_service = SteamAPI()
 
@@ -32,22 +33,4 @@ def update_steam_user_data(strategy, details, backend, user=None, *args, **kwarg
     if not user or kwargs.get("is_new"):
         return
 
-    # Получаем свежие данные из Steam API
-    steam_user_data = steam_api_service.get_user_profile(steam_id=user.steam_id)
-
-    if steam_user_data:
-        # Обновляем данные только если они изменились
-        updated = False
-
-        new_nickname = steam_user_data.get("personaname", "")
-        if new_nickname and user.nickname != new_nickname:
-            user.nickname = new_nickname
-            updated = True
-
-        new_avatar = steam_user_data.get("avatarfull", "")
-        if new_avatar and user.avatar_url != new_avatar:
-            user.avatar_url = new_avatar
-            updated = True
-
-        if updated:
-            user.save(update_fields=["nickname", "avatar_url"])
+    update_user_data(user.steam_id)
