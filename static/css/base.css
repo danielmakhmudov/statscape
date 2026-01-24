@@ -794,6 +794,142 @@ body:has(.login-container) .main-content {
     }
 }
 
+/* ===== LOGOUT DIALOG ===== */
+.logout-window {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+.logout-dialog {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(30, 41, 59, 0.98);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 16px;
+    padding: 0;
+    max-width: 420px;
+    width: 90%;
+    box-shadow: 
+        0 25px 50px -12px rgba(0, 0, 0, 0.6),
+        0 0 0 1px rgba(255, 255, 255, 0.05);
+    animation: dialogSlideIn 0.3s ease-out;
+    pointer-events: auto;
+    color: #ffffff;
+}
+
+.logout-dialog::backdrop {
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.3s ease-out;
+}
+
+.logout-confirmation {
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: center;
+    text-align: center;
+}
+
+.logout-confirmation h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #60a5fa, #a78bfa);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 0;
+    letter-spacing: -0.025em;
+}
+
+.logout-confirmation p {
+    color: #94a3b8;
+    font-size: 1rem;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.dialog-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.cancel-button,
+.confirm-button {
+    flex: 1;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+
+.cancel-button {
+    background: rgba(148, 163, 184, 0.1);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    color: #e2e8f0;
+}
+
+.cancel-button:hover {
+    background: rgba(148, 163, 184, 0.2);
+    border-color: rgba(148, 163, 184, 0.3);
+    transform: translateY(-1px);
+}
+
+.cancel-button:active {
+    transform: translateY(0);
+}
+
+.confirm-button {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.confirm-button:hover {
+    background: linear-gradient(135deg, #f87171, #ef4444);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+}
+
+.confirm-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes dialogSlideIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -60%);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+    }
+}
+
 @media (max-width: 640px) {
     .login-container {
         padding: 2rem;
@@ -809,4 +945,23 @@ body:has(.login-container) .main-content {
         padding: 0.875rem 1.25rem;
         font-size: 1rem;
     }
+    
+    .logout-dialog {
+        max-width: 90%;
+        width: calc(100% - 2rem);
+    }
+    
+    .logout-confirmation {
+        padding: 1.5rem;
+    }
+    
+    .dialog-buttons {
+        flex-direction: column;
+    }
+    
+    .cancel-button,
+    .confirm-button {
+        width: 100%;
+    }
 }
+

@@ -19,7 +19,7 @@
                 <a href="#" class="nav-link">Achievements</a>
                 <a href="#" class="nav-link">Statistics</a>
             </div>
-            <button class="topbar-logout">Logout</button>
+            <button id="logoutBtn" class="topbar-logout">Logout</button>
         </div>
     </nav>
 
@@ -38,9 +38,25 @@
    
     <!-- Main content area -->
     <main class="main-content">
+        <form id="logoutForm" method="post" action="{% url 'logout' %}" style="display: none;">
+            {% csrf_token %}
+        </form>
+
+        <div class="logout-window">
+            <dialog id="logoutDialog" class="logout-dialog">
+                <div class= "logout-confirmation">
+                    <p >Are you sure you want to sign out?</p>
+                    <div class="dialog-buttons">
+                        <button id="cancelBtn" class="cancel-button">Cancel</button>
+                        <button id="confirmLogoutBtn" class="confirm-button">Logout</button>
+                    </div>
+                </div>
+            </dialog>
+        </div>
         {% block content %}{% endblock %}
     </main>
-   
+    <script src="{% static 'js/logout.js'%}"></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>
+
