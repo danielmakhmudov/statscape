@@ -22,6 +22,23 @@
                         </svg>
                     </button>
                 </form>
+                <form method="post" id="deleteProfileForm" action="{%url 'delete_profile'%}" class="hidden-form">
+                    {% csrf_token %}
+                </form>
+                <div class="delete-profile">
+                    <button id="deleteProfileBtn">Delete profile</button>
+                </div>
+            </div>
+            <div class="logout-window">
+                <dialog id="deleteProfileDialog" class="logout-dialog">
+                    <div class= "logout-confirmation">
+                        <p >Are you sure you want to delete your profile?</p>
+                        <div class="dialog-buttons">
+                            <button id="cancelDeleteBtn" class="cancel-button">Cancel</button>
+                            <button id="confirmDeleteBtn" class="confirm-button">Delete</button>
+                        </div>
+                    </div>
+                </dialog>
             </div>
             <p class="profile-realname">{{user_profile.realname}}</p>
             <p class="profile-since">Steam user since {{user_profile.steam_user_since}}</p>
@@ -158,61 +175,8 @@
 {% endblock %}
 
 {%block extra_js%}
-  <script src="{% static 'js/chart.js' %}"></script>
-<script>
-    const labels = JSON.parse(document.getElementById('chart_labels').textContent);
-    const values = JSON.parse(document.getElementById('chart_values').textContent);
-    const hours = JSON.parse(document.getElementById('chart_hours').textContent);
-
-    const palette = [
-    '#4ade80','#22c55e','#16a34a','#15803d','#facc15',
-    '#fb923c','#f97316','#ef4444','#8b5cf6','#6366f1','#94a3b8'
-    ];
-
-    const ctx = document.getElementById('playtime-doughnut');
-    new Chart(ctx, {
-    type: 'doughnut',
-    data: {
-        labels,
-        datasets: [{
-        data: values,
-        backgroundColor: labels.map((_, i) => palette[i % palette.length]),
-        borderWidth: 1,
-        }]
-    },
-    options: {
-        plugins: {
-        legend: { position: 'right' },
-        tooltip: {
-            callbacks: {
-                label: (context) => {
-                const hoursValue = hours[context.dataIndex];
-                return `${context.parsed}%(${hoursValue}h)`;
-            }
-            }
-        }
-        }
-    }
-    });
-
-    // Update button loading state
-    const updateForm = document.querySelector('.update-form');
-    const updateButton = document.querySelector('.btn-update');
-    
-    if (updateForm && updateButton) {
-        updateForm.addEventListener('submit', function(e) {
-            updateButton.disabled = true;
-            updateButton.style.opacity = '0.6';
-            updateButton.style.cursor = 'wait';
-            updateButton.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>';
-            updateButton.querySelector('svg').style.animation = 'spin 1s linear infinite';
-        });
-    }
-</script>
-<style>
-    @keyframes spin {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
-    }
-</style>
+    <script src="{% static 'js/chart.js' %}"></script>
+    <script src="{% static 'js/draw_doughnut_chart.js' %}"></script>
+    <script src="{% static 'js/delete_profile.js' %}"></script>
+    <script src="{% static 'js/update_button_loading_state.js' %}"></script>
 {%endblock%}

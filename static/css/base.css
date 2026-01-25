@@ -360,6 +360,43 @@ body:has(.login-container) .main-content {
     height: 18px;
 }
 
+.delete-profile {
+    display: inline-flex;
+    margin: 0;
+}
+
+#deleteProfileBtn {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: 8px;
+    padding: 0.5rem 0.875rem;
+    color: #f87171;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+#deleteProfileBtn:hover {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(239, 68, 68, 0.2);
+}
+
+#deleteProfileBtn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.15);
+}
+
+#deleteProfileBtn:focus {
+    outline: 2px solid rgba(239, 68, 68, 0.3);
+    outline-offset: 2px;
+}
+
 .profile-realname {
     color: #64748b;
     font-size: 0.95rem;
@@ -964,4 +1001,11 @@ body:has(.login-container) .main-content {
         width: 100%;
     }
 }
+.hidden-form{
+    display: none;
+}
 
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}

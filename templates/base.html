@@ -38,7 +38,7 @@
    
     <!-- Main content area -->
     <main class="main-content">
-        <form id="logoutForm" method="post" action="{% url 'logout' %}" style="display: none;">
+        <form id="logoutForm" method="post" action="{% url 'logout' %}" class="hidden-form">
             {% csrf_token %}
         </form>
 
