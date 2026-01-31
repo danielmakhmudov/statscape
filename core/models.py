@@ -10,6 +10,7 @@ class Genre(models.Model):
 
 
 class Theme(models.Model):
+    igdb_id = models.IntegerField(unique=True)
     name = models.CharField(max_length=64, unique=True)
 
     def __str__(self):
