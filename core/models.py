@@ -23,6 +23,7 @@ class Game(models.Model):
     genres = models.ManyToManyField(Genre, related_name="games", blank=True)
     themes = models.ManyToManyField(Theme, related_name="theme", blank=True)
     logo_url = models.URLField(blank=True, null=True)
+    header_url = models.URLField(blank=True, null=True)
     rating = models.DecimalField(max_digits=3, decimal_places=1, blank=True, null=True)
 
     def __str__(self):

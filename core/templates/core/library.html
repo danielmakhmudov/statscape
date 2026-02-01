@@ -10,27 +10,35 @@
     <div class="library-header">
         <h1 class="library-title">Game Library</h1>
         <div class="library-stats">
-            <span class="library-stat-item">Total: <strong>150</strong></span>
+            <span class="library-stat-item">Total: <strong>{{games_count}}</strong></span>
         </div>
     </div>
 
     <div class="library-grid">
-        {% for i in "1234567890123456789012345" %}
+        {% for g in user_library %}
         <div class="game-card">
             <div class="game-card-image">
-                <div class="game-card-placeholder">
-                    <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                        <path d="M9 9h6v6H9z"/>
-                    </svg>
-                </div>
+                <img src="{{ g.game.header_url }}" alt="{{ g.game.name }}" loading="lazy">
             </div>
             <div class="game-card-content">
-                <h3 class="game-card-name">Game Title {{ forloop.counter }}</h3>
+                <h3 class="game-card-name">{{ g.game.name }}</h3>
                 <div class="game-card-meta">
-                    <span class="game-card-hours">0h</span>
-                    <span class="game-card-status">Not played</span>
+                    {% if g.playtime_hours > 0 %}
+                        <span class="game-card-hours">Recent: {{ g.recent_playtime_hours }}h · Total: {{ g.playtime_hours }}h</span>
+                    {% else %}
+                        <span class="game-card-status">Not played</span>
+                    {% endif %}
                 </div>
+                {% if g.game.themes.all %}
+                <div class="game-themes">
+                    <span class="game-themes-label">Themes</span>
+                    <div class="game-themes-tags">
+                        {% for t in g.game.themes.all %}
+                        <span class="theme-tag">{{ t.name }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
             </div>
         </div>
         {% endfor %}

@@ -75,6 +75,14 @@ class LibraryView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context.update({})
+        steam_id = self.request.user.social_auth.get(provider="steam").uid
+        user_library = get_or_fetch_user_library(steam_id=steam_id)
+        user_library, total_hours = enrich_games_with_stats(user_library)
+        context.update(
+            {
+                "user_library": user_library,
+                "games_count": len(user_library),
+            }
+        )
 
         return context

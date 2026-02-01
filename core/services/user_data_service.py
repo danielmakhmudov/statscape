@@ -117,8 +117,11 @@ def get_or_fetch_user_library(steam_id, force_update=False):
             if img_logo
             else None
         )
+        header_url = f"https://cdn.cloudflare.steamstatic.com/steam/apps/" f"{app_id}/header.jpg"
 
-        game_instances.append(Game(app_id=app_id, name=name, logo_url=logo_url, rating=rating))
+        game_instances.append(
+            Game(app_id=app_id, name=name, logo_url=logo_url, header_url=header_url, rating=rating)
+        )
     if not game_instances:
         return UserGame.objects.none()
 
@@ -137,7 +140,7 @@ def get_or_fetch_user_library(steam_id, force_update=False):
             game_instances,
             update_conflicts=True,
             unique_fields=["app_id"],
-            update_fields=["name", "logo_url", "rating"],
+            update_fields=["name", "logo_url", "header_url", "rating"],
             batch_size=1000,
         )
 
@@ -196,5 +199,5 @@ def get_or_fetch_user_library(steam_id, force_update=False):
         return (
             UserGame.objects.filter(user=user)
             .select_related("game")
-            .prefetch_releted("game__themes")
+            .prefetch_related("game__themes")
         )
