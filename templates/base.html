@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Steamscape{% endblock %}</title>
+    <title>{% block title %}Statscape{% endblock %}</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
     {% block extra_css %}{% endblock %}
@@ -13,13 +13,15 @@
     <nav class="topbar">
         <div class="topbar-content">
             <div class="topbar-logo">Statscape</div>
-            <div class="topbar-nav">
-                <a href="{% url 'dashboard'%}" class="nav-link active">Dashboard</a>
-                <a href="{% url 'library'%}" class="nav-link">Library</a>
-                <a href="#" class="nav-link">Achievements</a>
-                <a href="#" class="nav-link">Statistics</a>
-            </div>
-            <button id="logoutBtn" class="topbar-logout">Logout</button>
+            {%if user.is_authenticated%}
+                <div class="topbar-nav">
+                    <a href="{% url 'dashboard'%}" class="nav-link active">Dashboard</a>
+                    <a href="{% url 'library'%}" class="nav-link">Library</a>
+                    <a href="#" class="nav-link">Achievements</a>
+                    <a href="#" class="nav-link">Statistics</a>
+                </div>
+                <button id="logoutBtn" class="topbar-logout">Logout</button>
+            {%endif%}
         </div>
     </nav>
 
