@@ -493,6 +493,20 @@ body:has(.login-container) .main-content {
     padding: 2rem 0;
 }
 
+/* Compact chart card to align with Favorite games block */
+.card-chart {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+}
+
+.card-chart .card-title {
+    margin-bottom: 0.5rem;
+}
+
+.card-chart .chart-placeholder {
+    padding: 0.25rem 0;
+}
+
 .chart-legend {
     display: flex;
     flex-direction: column;
