@@ -110,6 +110,7 @@ def get_or_fetch_user_library(steam_id, force_update=False):
         name = g.get("name") or ""
 
         rating = igdb_data_map.get(app_id, {}).get("rating", 0.0)
+        time_to_beat = igdb_data_map.get(app_id, {}).get("time_to_beat", 0.0)
         img_logo = g.get("img_icon_url")
         logo_url = (
             f"https://media.steampowered.com/steamcommunity/public/images/apps/"
@@ -120,7 +121,14 @@ def get_or_fetch_user_library(steam_id, force_update=False):
         header_url = f"https://cdn.cloudflare.steamstatic.com/steam/apps/" f"{app_id}/header.jpg"
 
         game_instances.append(
-            Game(app_id=app_id, name=name, logo_url=logo_url, header_url=header_url, rating=rating)
+            Game(
+                app_id=app_id,
+                name=name,
+                logo_url=logo_url,
+                header_url=header_url,
+                rating=rating,
+                time_to_beat=time_to_beat,
+            )
         )
     if not game_instances:
         return UserGame.objects.none()
@@ -140,7 +148,7 @@ def get_or_fetch_user_library(steam_id, force_update=False):
             game_instances,
             update_conflicts=True,
             unique_fields=["app_id"],
-            update_fields=["name", "logo_url", "header_url", "rating"],
+            update_fields=["name", "logo_url", "header_url", "rating", "time_to_beat"],
             batch_size=1000,
         )
 
