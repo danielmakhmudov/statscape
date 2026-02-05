@@ -21,7 +21,18 @@
                 <img src="{{ g.game.header_url }}" alt="{{ g.game.name }}" loading="lazy">
             </div>
             <div class="game-card-content">
-                <h3 class="game-card-name">{{ g.game.name }}</h3>
+                <div class="game-card-header">
+                    <h3 class="game-card-name">{{ g.game.name }}</h3>
+                    <span class="game-card-rating{% if g.game.rating %}
+                        {% if g.game.rating >= 80 %} game-card-rating--high
+                        {% elif g.game.rating >= 60 %} game-card-rating--medium
+                        {% else %} game-card-rating--low
+                        {% endif %}
+                    {% endif %}">
+                        {% if g.game.rating %}★ {{ g.game.rating }}{% else %}—{% endif %}
+                    </span>
+                </div>
+                <p class="game-card-ttb">Time to beat: {{ g.game.time_to_beat }}h</p>
                 <div class="game-card-meta">
                     {% if g.playtime_hours > 0 %}
                         <span class="game-card-hours">Recent: {{ g.recent_playtime_hours }}h · Total: {{ g.playtime_hours }}h</span>
