@@ -14,6 +14,7 @@ from core.services.stats_service import (
     get_potentially_not_completed_games,
 )
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.paginator import Paginator
 
 
 class DashboardView(LoginRequiredMixin, TemplateView):
@@ -78,10 +79,13 @@ class LibraryView(LoginRequiredMixin, TemplateView):
         steam_id = self.request.user.social_auth.get(provider="steam").uid
         user_library = get_or_fetch_user_library(steam_id=steam_id)
         user_library, total_hours = enrich_games_with_stats(user_library)
+        paginator = Paginator(user_library, 24)
+        page_number = self.request.GET.get("page")
+        page_obj = paginator.get_page(page_number)
         context.update(
             {
-                "user_library": user_library,
-                "games_count": len(user_library),
+                "games_count": page_obj.paginator.count,
+                "page_obj": page_obj,
             }
         )
 

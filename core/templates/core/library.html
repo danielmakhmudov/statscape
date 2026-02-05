@@ -15,7 +15,7 @@
     </div>
 
     <div class="library-grid">
-        {% for g in user_library %}
+        {% for g in page_obj %}
         <div class="game-card">
             <div class="game-card-image">
                 <img src="{{ g.game.header_url }}" alt="{{ g.game.name }}" loading="lazy">
@@ -54,5 +54,48 @@
         </div>
         {% endfor %}
     </div>
+    {% if page_obj.paginator.num_pages > 1 %}
+    <div class="pagination-wrapper">
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+                <a href="?page=1" class="pagination-btn pagination-btn--first" title="First page">
+                    <span class="pagination-icon">&laquo;&laquo;</span>
+                </a>
+                <a href="?page={{page_obj.previous_page_number}}" class="pagination-btn pagination-btn--prev" title="Previous page">
+                    <span class="pagination-icon">&laquo;</span>
+                </a>
+            {% else %}
+                <span class="pagination-btn pagination-btn--disabled">
+                    <span class="pagination-icon">&laquo;&laquo;</span>
+                </span>
+                <span class="pagination-btn pagination-btn--disabled">
+                    <span class="pagination-icon">&laquo;</span>
+                </span>
+            {% endif %}
+            
+            <div class="pagination-info">
+                <span class="pagination-current">{{page_obj.number}}</span>
+                <span class="pagination-separator">of</span>
+                <span class="pagination-total">{{page_obj.paginator.num_pages}}</span>
+            </div>
+            
+            {% if page_obj.has_next %}
+                <a href="?page={{page_obj.next_page_number}}" class="pagination-btn pagination-btn--next" title="Next page">
+                    <span class="pagination-icon">&raquo;</span>
+                </a>
+                <a href="?page={{page_obj.paginator.num_pages}}" class="pagination-btn pagination-btn--last" title="Last page">
+                    <span class="pagination-icon">&raquo;&raquo;</span>
+                </a>
+            {% else %}
+                <span class="pagination-btn pagination-btn--disabled">
+                    <span class="pagination-icon">&raquo;</span>
+                </span>
+                <span class="pagination-btn pagination-btn--disabled">
+                    <span class="pagination-icon">&raquo;&raquo;</span>
+                </span>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}
