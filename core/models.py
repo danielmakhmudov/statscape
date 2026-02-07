@@ -44,3 +44,13 @@ class UserGame(models.Model):
     class Meta:
         unique_together = ("user", "game")
         ordering = ["-last_played"]
+
+
+class TokenStorage(models.Model):
+    service_name = models.CharField(max_length=32, unique=True)
+    access_token = models.CharField(max_length=255)
+    expires_at = models.DateTimeField()
+    updated_at = models.DateTimeField()
+
+    def __str__(self):
+        return f"{self.service_name} -- {self.access_token} expires at: {self.expires_at}"
