@@ -15,8 +15,8 @@
             <div class="topbar-logo">Statscape</div>
             {%if user.is_authenticated%}
                 <div class="topbar-nav">
-                    <a href="{% url 'dashboard'%}" class="nav-link active">Dashboard</a>
-                    <a href="{% url 'library'%}" class="nav-link">Library</a>
+                    <a href="{% url 'dashboard'%}" class="nav-link{% if request.resolver_match.url_name == 'dashboard' %} active{% endif %}">Dashboard</a>
+                    <a href="{% url 'library'%}" class="nav-link{% if request.resolver_match.url_name == 'library' %} active{% endif %}">Library</a>
                     <a href="#" class="nav-link">Achievements</a>
                     <a href="#" class="nav-link">Statistics</a>
                 </div>
