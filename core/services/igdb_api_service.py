@@ -1,5 +1,6 @@
 from django.utils import timezone
 from core.models import TokenStorage
+from core.services.utils import chunk_list
 from igdb.wrapper import IGDBWrapper
 from dotenv import load_dotenv
 import datetime
@@ -57,20 +58,22 @@ class IGDBClient:
                 raise
 
     def get_igdb_data(self, steam_app_ids):
-        steam_app_ids = ",".join([f'"{s_id}"' for s_id in steam_app_ids])
         if not steam_app_ids:
             return {}
-
         ACCESS_TOKEN = self.get_access_token()
         wrapper = IGDBWrapper(self.IGDB_CLIENT_ID, ACCESS_TOKEN)
 
-        byte_igdb_data = wrapper.api_request(
-            "external_games",
-            f"""fields uid, game.name, game.themes.name, game.themes.id, game.rating,
-            game.cover.url; limit 500; where external_game_source = 1 & uid = ({steam_app_ids});""",
-        )
+        json_igdb_data = []
+        for chunk in chunk_list(steam_app_ids, 500):
+            steam_app_ids_string = ",".join([f'"{s_id}"' for s_id in chunk])
+            byte_igdb_data = wrapper.api_request(
+                "external_games",
+                f"""fields uid, game.name, game.themes.name, game.themes.id, game.rating,
+                game.cover.url; limit 500;
+                where external_game_source = 1 & uid = ({steam_app_ids_string});""",
+            )
+            json_igdb_data.extend(json.loads(byte_igdb_data))
 
-        json_igdb_data = json.loads(byte_igdb_data)
         igdb_data_map = {}
 
         igdb_game_ids = set()
