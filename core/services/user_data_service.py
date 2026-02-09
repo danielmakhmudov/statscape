@@ -1,12 +1,15 @@
 from core.services.steam_api_service import SteamAPI
-from core.services.igdb_api_service import get_igdb_data
 from users.models import User
 from core.models import UserGame, Game, Theme
 from django.db import transaction
 from datetime import datetime, timezone as dt_timezone
+from core.services.igdb_api_service import IGDBClient
 import logging
+import os
+from dotenv import load_dotenv
 
 logger = logging.getLogger(__name__)
+load_dotenv()
 
 
 def get_or_fetch_user_profile(steam_id):
@@ -74,6 +77,10 @@ def get_or_fetch_user_library(steam_id, force_update=False):
             return user_games
 
     steam_api = SteamAPI()
+    igdb_client = IGDBClient(
+        IGDB_CLIENT_ID=os.getenv("IGDB_CLIENT_ID"),
+        IGDB_CLIENT_SECRET=os.getenv("IGDB_CLIENT_SECRET"),
+    )
     data = steam_api.get_user_library(steam_id=user.steam_id)
     games = data.get("games") if isinstance(data, dict) else None
     if not games:
@@ -91,7 +98,7 @@ def get_or_fetch_user_library(steam_id, force_update=False):
     if not api_games_map:
         return UserGame.objects.none()
 
-    igdb_data_map = get_igdb_data(steam_app_ids)
+    igdb_data_map = igdb_client.get_igdb_data(steam_app_ids)
     themes_list = []
     for t in igdb_data_map.values():
         themes_list.extend(t.get("themes", []))
