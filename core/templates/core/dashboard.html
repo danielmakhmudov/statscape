@@ -79,12 +79,12 @@
                     </div>
                 </div>
             </div>
-
+            
             <!-- Unfinished Games -->
             <div class="card">
                 <div class="card-header">
                     <h3 class="card-title">Potentially unfinished games</h3>
-                    <button class="btn-view-all">View all</button>
+                    <button class="btn-view-all"><a href="{%url 'library' %}?filter=not_completed">View all</a></button>
                 </div>
                 <div class="game-list">
                     {%for g in not_completed_games%}
@@ -105,7 +105,7 @@
             <div class="card">
                 <div class="card-header">
                     <h3 class="card-title">Not played games</h3>
-                    <button class="btn-view-all">View all</button>
+                    <button class="btn-view-all"><a href="{% url 'library' %}?filter=not_played">View all</a></button>
                 </div>
                 <div class="game-list">
                     {%for g in not_played_games%}
@@ -129,7 +129,7 @@
             <div class="card">
                 <div class="card-header">
                     <h3 class="card-title">Favorite games</h3>
-                    <button class="btn-view-all">View all</button>
+                    <button class="btn-view-all"><a href="{% url 'library' %}">View all</a></button>
                 </div>
                 <div class="game-list">
                     {%for g in favorite_games%}

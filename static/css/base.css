@@ -489,6 +489,16 @@ body:has(.login-container) .main-content {
     background: rgba(59, 130, 246, 0.2);
 }
 
+.btn-view-all a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.btn-view-all a:visited {
+    text-decoration: none;
+    color: inherit;
+}
+
 .chart-placeholder {
     padding: 2rem 0;
 }
