@@ -78,7 +78,14 @@ class LibraryView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         steam_id = self.request.user.social_auth.get(provider="steam").uid
         user_library = get_or_fetch_user_library(steam_id=steam_id)
-        user_library, total_hours = enrich_games_with_stats(user_library)
+        filter_type = self.request.GET.get("filter")
+        if filter_type:
+            if filter_type == "not_played":
+                user_library, _ = get_not_played_games(user_library)
+            if filter_type == "not_completed":
+                user_library, _ = get_potentially_not_completed_games(user_library)
+
+        user_library, _ = enrich_games_with_stats(user_library)
         paginator = Paginator(user_library, 24)
         page_number = self.request.GET.get("page")
         page_obj = paginator.get_page(page_number)
@@ -86,6 +93,7 @@ class LibraryView(LoginRequiredMixin, TemplateView):
             {
                 "games_count": page_obj.paginator.count,
                 "page_obj": page_obj,
+                "current_filter": filter_type,
             }
         )
 

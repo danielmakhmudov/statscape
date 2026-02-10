@@ -58,10 +58,10 @@
     <div class="pagination-wrapper">
         <div class="pagination">
             {% if page_obj.has_previous %}
-                <a href="?page=1" class="pagination-btn pagination-btn--first" title="First page">
+                <a href="?page=1{% if current_filter %}&filter={{current_filter}}{% endif %}" class="pagination-btn pagination-btn--first" title="First page">
                     <span class="pagination-icon">&laquo;&laquo;</span>
                 </a>
-                <a href="?page={{page_obj.previous_page_number}}" class="pagination-btn pagination-btn--prev" title="Previous page">
+                <a href="?page={{page_obj.previous_page_number}}{% if current_filter %}&filter={{current_filter}}{% endif %}" class="pagination-btn pagination-btn--prev" title="Previous page">
                     <span class="pagination-icon">&laquo;</span>
                 </a>
             {% else %}
@@ -80,10 +80,10 @@
             </div>
             
             {% if page_obj.has_next %}
-                <a href="?page={{page_obj.next_page_number}}" class="pagination-btn pagination-btn--next" title="Next page">
+                <a href="?page={{page_obj.next_page_number}}{% if current_filter %}&filter={{current_filter}}{% endif %}" class="pagination-btn pagination-btn--next" title="Next page">
                     <span class="pagination-icon">&raquo;</span>
                 </a>
-                <a href="?page={{page_obj.paginator.num_pages}}" class="pagination-btn pagination-btn--last" title="Last page">
+                <a href="?page={{page_obj.paginator.num_pages}}{% if current_filter %}&filter={{current_filter}}{% endif %}" class="pagination-btn pagination-btn--last" title="Last page">
                     <span class="pagination-icon">&raquo;&raquo;</span>
                 </a>
             {% else %}
