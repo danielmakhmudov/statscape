@@ -125,7 +125,7 @@ def get_or_fetch_user_library(steam_id, force_update=False):
             if img_logo
             else None
         )
-        header_url = f"https://cdn.cloudflare.steamstatic.com/steam/apps/" f"{app_id}/header.jpg"
+        header_url = f"https://cdn.cloudflare.steamstatic.com/steam/apps/{app_id}/header.jpg"
 
         game_instances.append(
             Game(
