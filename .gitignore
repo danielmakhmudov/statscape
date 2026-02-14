@@ -38,6 +38,10 @@ Thumbs.db
 *.log
 *.log.*
 
+# Coverage
+.coverage
+htmlcov/
+
 # Cached files for Django
 *.swp
 *.bak

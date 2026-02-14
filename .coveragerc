@@ -1,0 +1,16 @@
+[run]
+
+source = .
+omit =
+    *migrations*
+    *venv*
+    */tests/*
+    conftest.py
+    manage.py
+    steamscape/asgi.py
+    steamscape/wsgi.py
+    steamscape/settings.py
+    *admin.py*
+
+[report]
+skip_empty = true
