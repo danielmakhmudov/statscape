@@ -22,3 +22,8 @@ exclude = '''
   | node_modules
 )/
 '''
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGs_MODULE = "steamscape.settings"
+python_files = ["test_*.py", "*_tests.py"]
+addopts = "--reuse-db --cov=. --cov-report=html --cov-report=term-missing -v"
