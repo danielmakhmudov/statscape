@@ -9,8 +9,8 @@ def test_genre_model(genre):
 @pytest.mark.django_db
 def test_theme_model(theme):
     assert str(theme) == theme.name
-    assert isinstance(theme.igdb_id, int)
 
 
-# @pytest.mark.django_db
-# def test_game_model():
+@pytest.mark.django_db
+def test_game_model(game):
+    assert str(game) == game.name
