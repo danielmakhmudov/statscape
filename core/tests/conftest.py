@@ -4,15 +4,15 @@ from core.factories import GenreFactory, ThemeFactory, GameFactory
 
 
 @pytest.fixture
-def genre(db):
+def genre():
     return GenreFactory()
 
 
 @pytest.fixture
-def theme(db):
+def theme():
     return ThemeFactory()
 
 
 @pytest.fixture
-def game(db):
+def game():
     return GameFactory()
