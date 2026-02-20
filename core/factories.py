@@ -1,7 +1,7 @@
 import factory
 import datetime
 from factory.django import DjangoModelFactory
-from core.models import Genre, Theme, Game, UserGame
+from core.models import Genre, Theme, Game, UserGame, TokenStorage
 from users.factories import UserFactory
 
 
@@ -60,3 +60,13 @@ class UserGameFactory(DjangoModelFactory):
     total_playtime = 100
     recent_playtime = 100
     last_played = factory.Faker("past_datetime", tzinfo=datetime.timezone.utc)
+
+
+class TokenStorageFactory(DjangoModelFactory):
+    class Meta:
+        model = TokenStorage
+
+    service_name = "IGDB"
+    access_token = "ACCESS_TOKEN"
+    expires_at = factory.Faker("future_datetime", tzinfo=datetime.timezone.utc)
+    updated_at = factory.Faker("past_datetime", tzinfo=datetime.timezone.utc)

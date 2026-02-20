@@ -1,5 +1,11 @@
 import pytest
-from core.factories import GenreFactory, ThemeFactory, GameFactory, UserGameFactory
+from core.factories import (
+    GenreFactory,
+    ThemeFactory,
+    GameFactory,
+    UserGameFactory,
+    TokenStorageFactory,
+)
 
 
 @pytest.fixture
@@ -20,3 +26,8 @@ def game():
 @pytest.fixture
 def user_game():
     return UserGameFactory()
+
+
+@pytest.fixture
+def token_storage():
+    return TokenStorageFactory()
