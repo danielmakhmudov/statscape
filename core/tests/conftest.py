@@ -1,6 +1,5 @@
 import pytest
-
-from core.factories import GenreFactory, ThemeFactory, GameFactory
+from core.factories import GenreFactory, ThemeFactory, GameFactory, UserGameFactory
 
 
 @pytest.fixture
@@ -16,3 +15,8 @@ def theme():
 @pytest.fixture
 def game():
     return GameFactory()
+
+
+@pytest.fixture
+def user_game():
+    return UserGameFactory()
