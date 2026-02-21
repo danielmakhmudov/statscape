@@ -17,3 +17,9 @@ class UserFactory(DjangoModelFactory):
     @classmethod
     def _create(cls, model_class, *args, **kwargs):
         return model_class.objects.create_user(**kwargs)
+
+
+class SuperUserFactory(UserFactory):
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        return model_class.objects.create_superuser(**kwargs)
