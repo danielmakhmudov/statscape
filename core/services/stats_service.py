@@ -4,7 +4,7 @@ import heapq
 def enrich_games_with_stats(games):
     if not games:
         return [], 0.0
-    total_playtime = sum(g.total_playtime for g in games) if games else 0
+    total_playtime = sum(g.total_playtime for g in games)
     total_hours = round(total_playtime / 60, 1)
     for g in games:
         g.playtime_percentage = (
