@@ -57,8 +57,8 @@ class UserGameFactory(DjangoModelFactory):
 
     user = factory.SubFactory(UserFactory)
     game = factory.SubFactory(GameFactory)
-    total_playtime = 100
-    recent_playtime = 100
+    total_playtime = 60
+    recent_playtime = 60
     last_played = factory.Faker("past_datetime", tzinfo=datetime.timezone.utc)
 
 

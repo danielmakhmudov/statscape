@@ -24,8 +24,13 @@ def game():
 
 
 @pytest.fixture
+def user_game_list():
+    return UserGameFactory.build_batch(5)
+
+
+@pytest.fixture
 def user_game():
-    return UserGameFactory()
+    return UserGameFactory.build()
 
 
 @pytest.fixture
