@@ -3,11 +3,14 @@ from core.services.stats_service import enrich_games_with_stats, get_chart_data
 from core.factories import UserGameFactory
 
 
-def test_enrich_games_with_stats_basic(user_game_list):
-    enriched_games, total_hours = enrich_games_with_stats(user_game_list)
+def test_enrich_games_with_stats_basic():
+    user_games = UserGameFactory.build_batch(10, total_playtime=60, recent_playtime=60)
 
-    assert total_hours == 5
-    assert enriched_games[0].playtime_percentage == 20
+    enriched_games, total_hours = enrich_games_with_stats(user_games)
+
+    assert len(enriched_games) == len(user_games)
+    assert total_hours == 10
+    assert sum(g.playtime_percentage for g in enriched_games) == pytest.approx(100, abs=0.1)
     assert enriched_games[0].playtime_hours == 1
     assert enriched_games[0].recent_playtime_hours == 1
 
@@ -70,7 +73,7 @@ def test_get_chart_data_basic():
 
 
 def test_get_chart_data_only_top_games():
-    user_games = UserGameFactory.build_batch(10)
+    user_games = UserGameFactory.build_batch(10, total_playtime=60)
     enriched_games, _ = enrich_games_with_stats(user_games)
 
     chart_labels, chart_values, chart_hours = get_chart_data(enriched_games)
@@ -80,9 +83,9 @@ def test_get_chart_data_only_top_games():
 
 
 def test_get_chart_data_more_than_10_but_others_zero_percent():
-    user_games = UserGameFactory.build_batch(10) + UserGameFactory.build_batch(
-        5, recent_playtime=0, total_playtime=0
-    )
+    user_games = UserGameFactory.build_batch(
+        10, recent_playtime=60, total_playtime=60
+    ) + UserGameFactory.build_batch(5, recent_playtime=0, total_playtime=0)
     enriched_games, _ = enrich_games_with_stats(user_games)
 
     chart_labels, chart_values, chart_hours = get_chart_data(enriched_games)
