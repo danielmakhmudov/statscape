@@ -1,5 +1,5 @@
 import pytest
-from core.services.stats_service import enrich_games_with_stats, get_chart_data
+from core.services.stats_service import enrich_games_with_stats, get_chart_data, get_favorite_games
 from core.factories import UserGameFactory
 
 
@@ -100,3 +100,31 @@ def test_get_chart_data_empty_list():
     assert chart_labels == []
     assert chart_values == []
     assert chart_hours == []
+
+
+def test_get_favorite_games_basic():
+    user_games = UserGameFactory.build_batch(
+        5, total_playtime=120, recent_playtime=120
+    ) + UserGameFactory.build_batch(5, total_playtime=60, recent_playtime=60)
+    enriched_games, _ = enrich_games_with_stats(user_games)
+
+    favorite_games = get_favorite_games(enriched_games)
+
+    assert len(favorite_games) == 5
+    assert all(g.total_playtime == 120 for g in favorite_games)
+
+
+def test_get_favorite_games_empty_list():
+    favorite_games = get_favorite_games([])
+
+    assert favorite_games == []
+
+
+def test_get_favorite_games_three_games():
+    user_games = UserGameFactory.build_batch(3, total_playtime=120, recent_playtime=120)
+    enriched_games, _ = enrich_games_with_stats(user_games)
+
+    favorite_games = get_favorite_games(enriched_games)
+
+    assert len(favorite_games) == 3
+    assert all(g.total_playtime == 120 for g in favorite_games)
