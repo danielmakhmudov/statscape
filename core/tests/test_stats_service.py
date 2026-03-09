@@ -1,10 +1,14 @@
 import datetime as dt
 import pytest
+from core.models import UserGame
+from django.db.models import QuerySet
+
 from core.services.stats_service import (
     enrich_games_with_stats,
     get_chart_data,
     get_favorite_games,
     get_prepared_recently_played_games,
+    get_not_played_games,
 )
 from core.factories import UserGameFactory
 
@@ -173,3 +177,64 @@ def test_get_prepared_recently_played_games_empty():
     user_games = get_prepared_recently_played_games([])
 
     assert user_games == []
+
+
+@pytest.mark.django_db
+def test_get_not_played_games_queryset(user):
+    UserGameFactory.create_batch(5, user=user, total_playtime=0)
+    UserGameFactory.create_batch(10, user=user, total_playtime=120)
+    user_games = UserGame.objects.filter(user=user)
+    not_played_games, games_count = get_not_played_games(user_games)
+
+    assert games_count == not_played_games.count() == 5
+    assert isinstance(not_played_games, QuerySet)
+    assert all(g.total_playtime == 0 for g in not_played_games)
+
+
+def test_get_not_played_games_list():
+    user_games = UserGameFactory.build_batch(5, total_playtime=0) + UserGameFactory.build_batch(
+        10, total_playtime=120
+    )
+
+    not_played_games, games_count = get_not_played_games(user_games)
+
+    assert games_count == len(not_played_games) == 5
+    assert isinstance(not_played_games, list)
+    assert all(g.total_playtime == 0 for g in not_played_games)
+
+
+def test_get_not_played_games_limit_list():
+    user_games = UserGameFactory.build_batch(5, total_playtime=0)
+
+    not_played_games, games_count = get_not_played_games(user_games, limit=2)
+
+    assert isinstance(not_played_games, list)
+    assert len(not_played_games) == 2
+    assert games_count == 5
+
+
+@pytest.mark.django_db
+def test_get_not_played_games_limit_queryset(user):
+    UserGameFactory.create_batch(5, user=user, total_playtime=0)
+    user_games = UserGame.objects.filter(user=user)
+
+    not_played_games, games_count = get_not_played_games(user_games, limit=2)
+
+    assert isinstance(not_played_games, QuerySet)
+    assert not_played_games.count() == 2
+    assert games_count == 5
+
+
+@pytest.mark.django_db
+def test_get_not_played_games_empty_queryset(user):
+    user_games = UserGame.objects.filter(user=user)
+    not_played_games = get_not_played_games(user_games)
+
+    assert isinstance(not_played_games, QuerySet)
+    assert not_played_games.count() == 0
+
+
+def test_get_not_played_games_empty_list():
+    not_played_games = get_not_played_games([])
+
+    assert not_played_games == []
