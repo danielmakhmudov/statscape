@@ -1,5 +1,11 @@
+import datetime as dt
 import pytest
-from core.services.stats_service import enrich_games_with_stats, get_chart_data, get_favorite_games
+from core.services.stats_service import (
+    enrich_games_with_stats,
+    get_chart_data,
+    get_favorite_games,
+    get_prepared_recently_played_games,
+)
 from core.factories import UserGameFactory
 
 
@@ -128,3 +134,42 @@ def test_get_favorite_games_three_games():
 
     assert len(favorite_games) == 3
     assert all(g.total_playtime == 120 for g in favorite_games)
+
+
+def test_get_prepared_recently_played_games_basic():
+    old = dt.datetime.fromtimestamp(1680723278, tz=dt.timezone.utc)  # 2023
+    recent = dt.datetime.fromtimestamp(1712345678, tz=dt.timezone.utc)  # 2024
+    user_games = UserGameFactory.build_batch(10, last_played=old) + UserGameFactory.build_batch(
+        10, last_played=recent
+    )
+
+    recent_games = get_prepared_recently_played_games(user_games)
+
+    assert len(recent_games) == 5
+    assert all(g.last_played == recent for g in recent_games)
+
+
+def test_get_prepared_recently_played_games_all_none():
+    user_games = UserGameFactory.build_batch(3, last_played=None)
+
+    recent_games = get_prepared_recently_played_games(user_games)
+
+    assert recent_games == []
+
+
+def test_get_prepared_recently_played_games_some_none():
+    date = dt.datetime.fromtimestamp(1680723278, tz=dt.timezone.utc)
+    user_games = UserGameFactory.build_batch(5, last_played=None) + UserGameFactory.build_batch(
+        3, last_played=date
+    )
+
+    recent_games = get_prepared_recently_played_games(user_games)
+
+    assert len(recent_games) == 3
+    assert all(g.last_played == date for g in recent_games)
+
+
+def test_get_prepared_recently_played_games_empty():
+    user_games = get_prepared_recently_played_games([])
+
+    assert user_games == []
