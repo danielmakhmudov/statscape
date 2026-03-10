@@ -9,6 +9,7 @@ from core.services.stats_service import (
     get_favorite_games,
     get_prepared_recently_played_games,
     get_not_played_games,
+    get_potentially_not_completed_games,
 )
 from core.factories import UserGameFactory
 
@@ -238,3 +239,83 @@ def test_get_not_played_games_empty_list():
     not_played_games = get_not_played_games([])
 
     assert not_played_games == []
+
+
+@pytest.mark.django_db
+def test_get_potentially_not_completed_games_queryset(user):
+    UserGameFactory.create_batch(10, user=user, total_playtime=1000)
+    UserGameFactory.create_batch(5, user=user, total_playtime=120)
+    UserGameFactory.create_batch(15, user=user, total_playtime=0)
+
+    user_games = UserGame.objects.filter(user=user)
+
+    not_completed_games, games_count = get_potentially_not_completed_games(user_games)
+
+    assert not_completed_games.count() == games_count == 5
+    assert isinstance(not_completed_games, QuerySet)
+    assert all(g.total_playtime == 120 for g in not_completed_games)
+
+
+def test_get_potentially_not_completed_games_list():
+    user_games = (
+        UserGameFactory.build_batch(10, total_playtime=1000)
+        + UserGameFactory.build_batch(5, total_playtime=120)
+        + UserGameFactory.build_batch(15, total_playtime=0)
+    )
+
+    not_completed_games, games_count = get_potentially_not_completed_games(user_games)
+
+    assert isinstance(not_completed_games, list)
+    assert games_count == len(not_completed_games) == 5
+    assert all(g.total_playtime == 120 for g in not_completed_games)
+
+
+def test_get_potentially_not_completed_games_boundary_values():
+    user_games = (
+        UserGameFactory.build_batch(10, total_playtime=0)
+        + UserGameFactory.build_batch(5, total_playtime=1)
+        + UserGameFactory.build_batch(15, total_playtime=600)
+        + UserGameFactory.build_batch(20, total_playtime=601)
+    )
+
+    not_completed_games, _ = get_potentially_not_completed_games(user_games)
+
+    assert all(0 < g.total_playtime <= 600 for g in not_completed_games)
+
+
+def test_get_potentially_not_completed_games_empty_list():
+    not_completed_games = get_potentially_not_completed_games([])
+
+    assert not_completed_games == []
+
+
+@pytest.mark.django_db
+def test_get_potentially_not_completed_games_empty_queryset(user):
+    user_games = UserGame.objects.filter(user=user)
+
+    not_completed_games = get_potentially_not_completed_games(user_games)
+
+    assert isinstance(not_completed_games, QuerySet)
+    assert not_completed_games.count() == 0
+
+
+@pytest.mark.django_db
+def test_get_potentially_not_completed_games_limit_queryset(user):
+    UserGameFactory.create_batch(5, user=user, total_playtime=120)
+    user_games = UserGame.objects.filter(user=user)
+
+    not_completed_games, games_count = get_potentially_not_completed_games(user_games, limit=2)
+
+    assert isinstance(not_completed_games, QuerySet)
+    assert not_completed_games.count() == 2
+    assert games_count == 5
+
+
+def test_get_potentially_not_completed_games_limit_list():
+    user_games = UserGameFactory.build_batch(5, total_playtime=120)
+
+    not_completed_games, games_count = get_potentially_not_completed_games(user_games, limit=2)
+
+    assert isinstance(not_completed_games, list)
+    assert len(not_completed_games) == 2
+    assert games_count == 5
