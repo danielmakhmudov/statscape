@@ -1,4 +1,7 @@
 import pytest
+import requests
+from unittest.mock import Mock
+from core.services.steam_api_service import SteamAPI
 from core.factories import (
     GenreFactory,
     ThemeFactory,
@@ -36,3 +39,23 @@ def user_game():
 @pytest.fixture
 def token_storage():
     return TokenStorageFactory()
+
+
+@pytest.fixture
+def steam_api_instance(monkeypatch):
+    monkeypatch.setenv("STEAM_API_KEY", "fake-key")
+    return SteamAPI()
+
+
+@pytest.fixture
+def mock_response_success():
+    mock_response = Mock()
+    mock_response.raise_for_status.return_value = None
+    return mock_response
+
+
+@pytest.fixture
+def mock_response_status_exception():
+    mock_response = Mock()
+    mock_response.raise_for_status.side_effect = requests.RequestException()
+    return mock_response
