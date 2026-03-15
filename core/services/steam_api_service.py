@@ -67,7 +67,7 @@ class SteamAPI:
         params = {
             "steamid": steam_id,
             "key": self.steam_api_key,
-            "count": 7,
+            "count": 5,
             "format": "json",
         }
 
