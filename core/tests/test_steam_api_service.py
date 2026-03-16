@@ -33,24 +33,22 @@ def test_get_user_profile_success(steam_api_instance, mock_response_success):
     steam_api_instance.session.get.assert_called_once_with(endpoint, params=params)
 
 
-def test_get_user_profile_empty_response(steam_api_instance, mock_response_success):
-    mock_response_success.json.return_value = {"response": {}}
-
+@pytest.mark.parametrize(
+    "api_payload, expected",
+    [({"response": {}}, {}), ({"response": {"players": []}}, {}), ({}, {})],
+    ids=["empty_response_dict", "empty_players_list", "empty_api_response"],
+)
+def test_get_user_profile_invalid_api_response(
+    api_payload, expected, steam_api_instance, mock_response_success
+):
+    mock_response_success.json.return_value = api_payload
     steam_api_instance.session.get = Mock(return_value=mock_response_success)
     response = steam_api_instance.get_user_profile(steam_id="123")
 
-    assert response == {}
-    steam_api_instance.session.get.assert_called_once()
-
-
-def test_get_user_profile_empty_players_list(steam_api_instance, mock_response_success):
-    mock_response_success.json.return_value = {"response": {"players": []}}
-
-    steam_api_instance.session.get = Mock(return_value=mock_response_success)
-    response = steam_api_instance.get_user_profile(steam_id="123")
-
-    assert response == {}
-    steam_api_instance.session.get.assert_called_once()
+    endpoint = "https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/"
+    params = {"key": "fake-key", "steamids": "123", "format": "json"}
+    assert response == expected
+    steam_api_instance.session.get.assert_called_once_with(endpoint, params=params)
 
 
 def test_get_user_profile_raise_for_status_exception(
@@ -82,6 +80,9 @@ def test_get_user_library_success(steam_api_instance, mock_response_success):
         "response": {"game_count": 3, "games": [{"appid": 123}, {"appid": 456}, {"appid": 789}]}
     }
     steam_api_instance.session.get = Mock(return_value=mock_response_success)
+
+    response = steam_api_instance.get_user_library("123")
+
     endpoint = "https://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/"
     params = {
         "key": "fake-key",
@@ -90,51 +91,38 @@ def test_get_user_library_success(steam_api_instance, mock_response_success):
         "include_played_free_games": True,
         "format": "json",
     }
-
-    response = steam_api_instance.get_user_library("123")
-
     assert response == {"game_count": 3, "games": [{"appid": 123}, {"appid": 456}, {"appid": 789}]}
     steam_api_instance.session.get.assert_called_once_with(endpoint, params=params)
 
 
-def test_get_user_library_empty_response_dictionary(steam_api_instance, mock_response_success):
-    mock_response_success.json.return_value = {"response": {}}
+@pytest.mark.parametrize(
+    "api_payload, expected",
+    [
+        ({"response": {}}, {}),
+        ({}, {}),
+        ({"response": {"game_count": 0, "games": []}}, {"game_count": 0, "games": []}),
+        ({"response": {"game_count": 0}}, {}),
+    ],
+    ids=["empty_response_dict", "empty_api_response", "empty_games_list", "without_games_list"],
+)
+def test_get_user_library_invalid_api_response(
+    api_payload, expected, steam_api_instance, mock_response_success
+):
+    mock_response_success.json.return_value = api_payload
     steam_api_instance.session.get = Mock(return_value=mock_response_success)
 
     response = steam_api_instance.get_user_library(steam_id="123")
 
-    assert response == {}
-    steam_api_instance.session.get.assert_called_once()
-
-
-def test_get_user_library_empty_api_response(steam_api_instance, mock_response_success):
-    mock_response_success.json.return_value = {}
-    steam_api_instance.session.get = Mock(return_value=mock_response_success)
-
-    response = steam_api_instance.get_user_library(steam_id="123")
-
-    assert response == {}
-    steam_api_instance.session.get.assert_called_once()
-
-
-def test_get_user_library_empty_games_list(steam_api_instance, mock_response_success):
-    mock_response_success.json.return_value = {"response": {"game_count": 0, "games": []}}
-    steam_api_instance.session.get = Mock(return_value=mock_response_success)
-
-    response = steam_api_instance.get_user_library(steam_id="123")
-
-    assert response == {"game_count": 0, "games": []}
-    steam_api_instance.session.get.assert_called_once()
-
-
-def test_get_user_library_without_games_list(steam_api_instance, mock_response_success):
-    mock_response_success.json.return_value = {"response": {"game_count": 0}}
-    steam_api_instance.session.get = Mock(return_value=mock_response_success)
-
-    response = steam_api_instance.get_user_library(steam_id="123")
-
-    assert response == {}
-    steam_api_instance.session.get.assert_called_once()
+    endpoint = "https://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/"
+    params = {
+        "key": "fake-key",
+        "steamid": "123",
+        "include_appinfo": True,
+        "include_played_free_games": True,
+        "format": "json",
+    }
+    assert response == expected
+    steam_api_instance.session.get.assert_called_once_with(endpoint, params=params)
 
 
 def test_get_user_library_raise_for_status_exception(
@@ -164,7 +152,7 @@ def test_get_user_library_request_exception(steam_api_instance, caplog):
 def test_get_recently_played_games_success(steam_api_instance, mock_response_success):
     mock_response_success.json.return_value = {
         "response": {
-            "total_count": 6,
+            "total_count": 5,
             "games": [
                 {"appid": 111},
                 {"appid": 222},
@@ -175,6 +163,9 @@ def test_get_recently_played_games_success(steam_api_instance, mock_response_suc
         }
     }
     steam_api_instance.session.get = Mock(return_value=mock_response_success)
+
+    response = steam_api_instance.get_recently_played_games(steam_id="123")
+
     endpoint = "https://api.steampowered.com/IPlayerService/GetRecentlyPlayedGames/v0001/"
     params = {
         "steamid": "123",
@@ -182,10 +173,8 @@ def test_get_recently_played_games_success(steam_api_instance, mock_response_suc
         "count": 5,
         "format": "json",
     }
-    response = steam_api_instance.get_recently_played_games(steam_id="123")
-
     assert response == {
-        "total_count": 6,
+        "total_count": 5,
         "games": [
             {"appid": 111},
             {"appid": 222},
@@ -197,47 +186,33 @@ def test_get_recently_played_games_success(steam_api_instance, mock_response_suc
     steam_api_instance.session.get.assert_called_once_with(endpoint, params=params)
 
 
-def test_get_recently_played_games_empty_api_response(steam_api_instance, mock_response_success):
-    mock_response_success.json.return_value = {}
-    steam_api_instance.session.get = Mock(return_value=mock_response_success)
-
-    response = steam_api_instance.get_recently_played_games(steam_id="123")
-
-    assert response == {}
-    steam_api_instance.session.get.assert_called_once()
-
-
-def test_get_recently_played_games_empty_response_dictionary(
-    steam_api_instance, mock_response_success
+@pytest.mark.parametrize(
+    "api_payload, expected",
+    [
+        ({}, {}),
+        ({"response": {}}, {}),
+        ({"response": {"total_count": 0, "games": []}}, {"total_count": 0, "games": []}),
+        ({"response": {"total_count": 0}}, {}),
+    ],
+    ids=["empty_api_response", "empty_response_dict", "empty_games_list", "without_games_list"],
+)
+def test_get_recently_played_games_invalid_api_response(
+    api_payload, expected, steam_api_instance, mock_response_success
 ):
-    mock_response_success.json.return_value = {"response": {}}
+    mock_response_success.json.return_value = api_payload
     steam_api_instance.session.get = Mock(return_value=mock_response_success)
 
     response = steam_api_instance.get_recently_played_games(steam_id="123")
 
-    assert response == {}
-    steam_api_instance.session.get.assert_called_once()
-
-
-def test_get_recently_played_games_empty_games_list(steam_api_instance, mock_response_success):
-    mock_response_success.json.return_value = {"response": {"total_count": 0, "games": []}}
-
-    steam_api_instance.session.get = Mock(return_value=mock_response_success)
-
-    response = steam_api_instance.get_recently_played_games(steam_id="123")
-
-    assert response == {"total_count": 0, "games": []}
-    steam_api_instance.session.get.assert_called_once()
-
-
-def test_get_recently_played_games_without_games_list(steam_api_instance, mock_response_success):
-    mock_response_success.json.return_value = {"response": {"total_count": 0}}
-    steam_api_instance.session.get = Mock(return_value=mock_response_success)
-
-    response = steam_api_instance.get_recently_played_games(steam_id="123")
-
-    assert response == {}
-    steam_api_instance.session.get.assert_called_once()
+    endpoint = "https://api.steampowered.com/IPlayerService/GetRecentlyPlayedGames/v0001/"
+    params = {
+        "steamid": "123",
+        "key": "fake-key",
+        "count": 5,
+        "format": "json",
+    }
+    assert response == expected
+    steam_api_instance.session.get.assert_called_once_with(endpoint, params=params)
 
 
 def test_get_recently_played_games_request_exception(steam_api_instance, caplog):
