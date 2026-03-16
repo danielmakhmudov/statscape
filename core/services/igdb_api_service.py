@@ -14,8 +14,21 @@ logger = logging.getLogger(__name__)
 load_dotenv()
 
 
+class ConfigurationError(Exception):
+    pass
+
+
 class IGDBClient:
     def __init__(self, IGDB_CLIENT_ID, IGDB_CLIENT_SECRET):
+        if (
+            not IGDB_CLIENT_ID
+            or not IGDB_CLIENT_ID.strip()
+            or not IGDB_CLIENT_SECRET
+            or not IGDB_CLIENT_SECRET.strip()
+        ):
+            logger.error("IGDB_CLIENT_ID or IGDB_CLIENT_SECRET isn't found")
+            raise ConfigurationError("IGDB_CLIENT_ID and IGDB_CLIENT_SECRET are required")
+
         self.IGDB_CLIENT_ID = IGDB_CLIENT_ID
         self.IGDB_CLIENT_SECRET = IGDB_CLIENT_SECRET
 
