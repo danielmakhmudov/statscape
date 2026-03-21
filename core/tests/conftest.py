@@ -9,6 +9,7 @@ from core.factories import (
     UserGameFactory,
     TokenStorageFactory,
 )
+from core.services.igdb_api_service import IGDBClient
 
 
 @pytest.fixture
@@ -59,3 +60,10 @@ def mock_response_status_exception():
     mock_response = Mock()
     mock_response.raise_for_status.side_effect = requests.RequestException()
     return mock_response
+
+
+@pytest.fixture
+def igdb_client():
+    return IGDBClient(
+        IGDB_CLIENT_ID="fake-igdb_client_id", IGDB_CLIENT_SECRET="fake-igdb_client_secret"
+    )

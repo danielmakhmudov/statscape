@@ -3,13 +3,9 @@ import logging
 from core.services.igdb_api_service import ConfigurationError, IGDBClient
 
 
-def test_init_success():
-    igdb_client_instance = IGDBClient(
-        IGDB_CLIENT_ID="fake-igdb_client_id", IGDB_CLIENT_SECRET="fake-igdb_client_secret"
-    )
-
-    assert igdb_client_instance.IGDB_CLIENT_ID == "fake-igdb_client_id"
-    assert igdb_client_instance.IGDB_CLIENT_SECRET == "fake-igdb_client_secret"
+def test_init_success(igdb_client):
+    assert igdb_client.IGDB_CLIENT_ID == "fake-igdb_client_id"
+    assert igdb_client.IGDB_CLIENT_SECRET == "fake-igdb_client_secret"
 
 
 @pytest.mark.parametrize(
@@ -41,3 +37,10 @@ def test_init_configuration_error(IGDB_CLIENT_ID, IGDB_CLIENT_SECRET, caplog):
             IGDBClient(IGDB_CLIENT_ID, IGDB_CLIENT_SECRET)
 
     assert "IGDB_CLIENT_ID or IGDB_CLIENT_SECRET isn't found" in caplog.text
+
+
+@pytest.mark.django_db
+def test_get_access_token_success(igdb_client, token_storage):
+    access_token = igdb_client.get_access_token()
+
+    assert access_token == token_storage.access_token

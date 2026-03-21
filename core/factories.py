@@ -66,7 +66,7 @@ class TokenStorageFactory(DjangoModelFactory):
     class Meta:
         model = TokenStorage
 
-    service_name = "IGDB"
+    service_name = "igdb"
     access_token = "ACCESS_TOKEN"
     expires_at = factory.Faker("future_datetime", tzinfo=datetime.timezone.utc)
     updated_at = factory.Faker("past_datetime", tzinfo=datetime.timezone.utc)
