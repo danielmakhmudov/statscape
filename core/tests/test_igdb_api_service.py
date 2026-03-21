@@ -33,7 +33,7 @@ def test_init_success():
         "client_secret_is_whitespace",
     ],
 )
-def test_init_configuration_exception(IGDB_CLIENT_ID, IGDB_CLIENT_SECRET, caplog):
+def test_init_configuration_error(IGDB_CLIENT_ID, IGDB_CLIENT_SECRET, caplog):
     with caplog.at_level(logging.ERROR):
         with pytest.raises(
             ConfigurationError, match="IGDB_CLIENT_ID and IGDB_CLIENT_SECRET are required"
