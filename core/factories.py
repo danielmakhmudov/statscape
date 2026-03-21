@@ -70,3 +70,7 @@ class TokenStorageFactory(DjangoModelFactory):
     access_token = "ACCESS_TOKEN"
     expires_at = factory.Faker("future_datetime", tzinfo=datetime.timezone.utc)
     updated_at = factory.Faker("past_datetime", tzinfo=datetime.timezone.utc)
+
+
+class ExpiredTokenStorageFactory(TokenStorageFactory):
+    expires_at = factory.Faker("past_datetime", tzinfo=datetime.timezone.utc)

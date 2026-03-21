@@ -1,6 +1,8 @@
 import pytest
 import logging
 from core.services.igdb_api_service import ConfigurationError, IGDBClient
+from unittest.mock import MagicMock
+from core.models import TokenStorage
 
 
 def test_init_success(igdb_client):
@@ -44,3 +46,56 @@ def test_get_access_token_success(igdb_client, token_storage):
     access_token = igdb_client.get_access_token()
 
     assert access_token == token_storage.access_token
+
+
+@pytest.mark.django_db
+def test_get_access_token_no_token_in_db(igdb_client, monkeypatch):
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = {
+        "access_token": "fake-access-token",
+        "expires_in": 12345,
+        "token_type": "bearer",
+    }
+    mock_post = MagicMock(return_value=mock_response)
+    monkeypatch.setattr("core.services.igdb_api_service.requests.post", mock_post)
+
+    access_token = igdb_client.get_access_token()
+
+    assert TokenStorage.objects.filter(access_token="fake-access-token").exists()
+    assert access_token == "fake-access-token"
+    mock_post.assert_called_once_with(
+        url="https://id.twitch.tv/oauth2/token",
+        params={
+            "client_id": igdb_client.IGDB_CLIENT_ID,
+            "client_secret": igdb_client.IGDB_CLIENT_SECRET,
+            "grant_type": "client_credentials",
+        },
+    )
+
+
+@pytest.mark.django_db
+def test_get_access_token_expired(igdb_client, expired_token_storage, monkeypatch):
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = {
+        "access_token": "fake-access-token",
+        "expires_in": 12345,
+        "token_type": "bearer",
+    }
+    mock_post = MagicMock(return_value=mock_response)
+    monkeypatch.setattr("core.services.igdb_api_service.requests.post", mock_post)
+
+    access_token = igdb_client.get_access_token()
+
+    assert access_token == "fake-access-token"
+    assert TokenStorage.objects.filter(access_token="fake-access-token").exists()
+    assert TokenStorage.objects.count() == 1
+    mock_post.assert_called_once_with(
+        url="https://id.twitch.tv/oauth2/token",
+        params={
+            "client_id": igdb_client.IGDB_CLIENT_ID,
+            "client_secret": igdb_client.IGDB_CLIENT_SECRET,
+            "grant_type": "client_credentials",
+        },
+    )

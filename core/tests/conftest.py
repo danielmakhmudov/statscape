@@ -8,6 +8,7 @@ from core.factories import (
     GameFactory,
     UserGameFactory,
     TokenStorageFactory,
+    ExpiredTokenStorageFactory,
 )
 from core.services.igdb_api_service import IGDBClient
 
@@ -40,6 +41,11 @@ def user_game():
 @pytest.fixture
 def token_storage():
     return TokenStorageFactory()
+
+
+@pytest.fixture
+def expired_token_storage():
+    return ExpiredTokenStorageFactory()
 
 
 @pytest.fixture
