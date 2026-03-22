@@ -50,6 +50,12 @@ class IGDBClient:
                     igdb_access_token_info = response.json()
                     access_token = igdb_access_token_info.get("access_token")
                     expires_in_sec = igdb_access_token_info.get("expires_in")
+                    if not isinstance(access_token, str) or not access_token.strip():
+                        logger.error("Error: invalid access_token value in IGDB response")
+                        raise ValueError("Invalid IGDB token payload: missing access_token")
+                    if not isinstance(expires_in_sec, (int, float)):
+                        logger.error("Error: invalid expires_in value in IGDB response")
+                        raise ValueError("Invalid IGDB token payload: invalid expires_in")
                     expires_at = current_datetime + datetime.timedelta(seconds=expires_in_sec)
 
                     token_obj, created = TokenStorage.objects.update_or_create(

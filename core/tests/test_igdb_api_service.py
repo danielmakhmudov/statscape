@@ -1,8 +1,11 @@
 import pytest
 import logging
+import requests
+import datetime
 from core.services.igdb_api_service import ConfigurationError, IGDBClient
 from unittest.mock import MagicMock
 from core.models import TokenStorage
+from core.factories import TokenStorageFactory
 
 
 def test_init_success(igdb_client):
@@ -99,3 +102,91 @@ def test_get_access_token_expired(igdb_client, expired_token_storage, monkeypatc
             "grant_type": "client_credentials",
         },
     )
+
+
+@pytest.mark.django_db
+def test_get_access_token_expires_now(igdb_client, monkeypatch):
+    TokenStorageFactory.create(expires_at=datetime.datetime.now(datetime.timezone.utc))
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = {
+        "access_token": "fake-access-token",
+        "expires_in": 12345,
+        "token_type": "bearer",
+    }
+    mock_post = MagicMock(return_value=mock_response)
+    monkeypatch.setattr("core.services.igdb_api_service.requests.post", mock_post)
+
+    access_token = igdb_client.get_access_token()
+
+    assert access_token == "fake-access-token"
+    mock_post.assert_called_once()
+
+
+@pytest.mark.django_db
+def test_get_access_token_bad_response(igdb_client, monkeypatch, caplog):
+    mock_response = MagicMock()
+    mock_response.status_code = 500
+    mock_post = MagicMock(return_value=mock_response)
+    monkeypatch.setattr("core.services.igdb_api_service.requests.post", mock_post)
+
+    with caplog.at_level(logging.ERROR):
+        with pytest.raises(Exception):
+            igdb_client.get_access_token()
+
+    assert "IGDB token request failed with status code: 500" in caplog.text
+
+
+@pytest.mark.django_db
+def test_get_access_token_request_exception(igdb_client, monkeypatch, caplog):
+    mock_response = MagicMock(side_effect=requests.RequestException)
+
+    monkeypatch.setattr("core.services.igdb_api_service.requests.post", mock_response)
+
+    with caplog.at_level(logging.ERROR):
+        with pytest.raises(requests.RequestException):
+            igdb_client.get_access_token()
+
+    assert "Error: Failed to get IGDB ACCESS TOKEN:" in caplog.text
+
+
+@pytest.mark.parametrize(
+    "access_token", ["", " ", None], ids=["empty_string", "whitespace", "None"]
+)
+@pytest.mark.django_db
+def test_get_access_token_invalid_access_token(igdb_client, access_token, monkeypatch, caplog):
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = {
+        "access_token": access_token,
+        "expires_in": 12345,
+        "token_type": "bearer",
+    }
+    mock_post = MagicMock(return_value=mock_response)
+    monkeypatch.setattr("core.services.igdb_api_service.requests.post", mock_post)
+
+    with caplog.at_level(logging.ERROR):
+        with pytest.raises(ValueError, match="Invalid IGDB token payload: missing access_token"):
+            igdb_client.get_access_token()
+
+    assert "Error: invalid access_token value in IGDB response" in caplog.text
+
+
+@pytest.mark.parametrize("expires_in", ["abc", None], ids=["string_value", "None"])
+@pytest.mark.django_db
+def test_get_access_token_invalid_expires_in_value(igdb_client, expires_in, monkeypatch, caplog):
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = {
+        "access_token": "fake-access-token",
+        "expires_in": expires_in,
+        "token_type": "bearer",
+    }
+    mock_post = MagicMock(return_value=mock_response)
+    monkeypatch.setattr("core.services.igdb_api_service.requests.post", mock_post)
+
+    with caplog.at_level(logging.ERROR):
+        with pytest.raises(ValueError, match="Invalid IGDB token payload: invalid expires_in"):
+            igdb_client.get_access_token()
+
+    assert "Error: invalid expires_in value in IGDB response" in caplog.text
