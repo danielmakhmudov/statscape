@@ -166,3 +166,10 @@ def test_get_access_token_invalid_expires_in_value(igdb_client, expires_in, monk
             igdb_client.get_access_token()
 
     assert "Error: invalid expires_in value in IGDB response" in caplog.text
+
+
+@pytest.mark.parametrize("steam_app_ids", [[], None], ids=["empty_list", "None_value"])
+def test_get_igdb_data_invalid_steam_ids(igdb_client, steam_app_ids):
+    igdb_data = igdb_client.get_igdb_data(steam_app_ids)
+
+    assert igdb_data == {}
