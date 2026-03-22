@@ -1,6 +1,6 @@
 import pytest
 import requests
-from unittest.mock import Mock
+from unittest.mock import Mock, MagicMock
 from core.services.steam_api_service import SteamAPI
 from core.factories import (
     GenreFactory,
@@ -73,3 +73,17 @@ def igdb_client():
     return IGDBClient(
         IGDB_CLIENT_ID="fake-igdb_client_id", IGDB_CLIENT_SECRET="fake-igdb_client_secret"
     )
+
+
+@pytest.fixture
+def mock_post():
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = {
+        "access_token": "fake-access-token",
+        "expires_in": 12345,
+        "token_type": "bearer",
+    }
+    mock_post = MagicMock(return_value=mock_response)
+
+    return mock_post

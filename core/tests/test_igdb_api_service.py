@@ -52,15 +52,7 @@ def test_get_access_token_success(igdb_client, token_storage):
 
 
 @pytest.mark.django_db
-def test_get_access_token_no_token_in_db(igdb_client, monkeypatch):
-    mock_response = MagicMock()
-    mock_response.status_code = 200
-    mock_response.json.return_value = {
-        "access_token": "fake-access-token",
-        "expires_in": 12345,
-        "token_type": "bearer",
-    }
-    mock_post = MagicMock(return_value=mock_response)
+def test_get_access_token_no_token_in_db(igdb_client, mock_post, monkeypatch):
     monkeypatch.setattr("core.services.igdb_api_service.requests.post", mock_post)
 
     access_token = igdb_client.get_access_token()
@@ -78,15 +70,7 @@ def test_get_access_token_no_token_in_db(igdb_client, monkeypatch):
 
 
 @pytest.mark.django_db
-def test_get_access_token_expired(igdb_client, expired_token_storage, monkeypatch):
-    mock_response = MagicMock()
-    mock_response.status_code = 200
-    mock_response.json.return_value = {
-        "access_token": "fake-access-token",
-        "expires_in": 12345,
-        "token_type": "bearer",
-    }
-    mock_post = MagicMock(return_value=mock_response)
+def test_get_access_token_expired(igdb_client, mock_post, expired_token_storage, monkeypatch):
     monkeypatch.setattr("core.services.igdb_api_service.requests.post", mock_post)
 
     access_token = igdb_client.get_access_token()
@@ -105,16 +89,8 @@ def test_get_access_token_expired(igdb_client, expired_token_storage, monkeypatc
 
 
 @pytest.mark.django_db
-def test_get_access_token_expires_now(igdb_client, monkeypatch):
+def test_get_access_token_expires_now(igdb_client, mock_post, monkeypatch):
     TokenStorageFactory.create(expires_at=datetime.datetime.now(datetime.timezone.utc))
-    mock_response = MagicMock()
-    mock_response.status_code = 200
-    mock_response.json.return_value = {
-        "access_token": "fake-access-token",
-        "expires_in": 12345,
-        "token_type": "bearer",
-    }
-    mock_post = MagicMock(return_value=mock_response)
     monkeypatch.setattr("core.services.igdb_api_service.requests.post", mock_post)
 
     access_token = igdb_client.get_access_token()
