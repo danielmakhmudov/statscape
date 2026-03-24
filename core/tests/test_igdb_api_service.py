@@ -223,3 +223,46 @@ def test_get_igdb_game_ids_invalid_igdb_data(json_igdb_data):
     igdb_game_ids = IGDBClient.get_igdb_game_ids(json_igdb_data)
 
     assert igdb_game_ids == set()
+
+
+def test_get_time_to_beat_map_success():
+    time_to_beat_data = [
+        {"id": 71, "game_id": 231, "normally": 43503},
+        {"id": 1747, "game_id": 132181, "normally": 60566},
+    ]
+
+    time_to_beat_map = IGDBClient.get_time_to_beat_map(time_to_beat_data)
+
+    assert time_to_beat_map == {
+        "231": {"id": 71, "game_id": 231, "normally": 43503},
+        "132181": {"id": 1747, "game_id": 132181, "normally": 60566},
+    }
+
+
+def test_get_time_to_beat_map_skips_invalid_entries():
+    time_to_beat_data = [
+        {"id": 71, "game_id": 231, "normally": 43503},
+        {"id": 1747, "normally": 60566},
+    ]
+
+    time_to_beat_map = IGDBClient.get_time_to_beat_map(time_to_beat_data)
+
+    assert time_to_beat_map == {
+        "231": {"id": 71, "game_id": 231, "normally": 43503},
+    }
+
+
+@pytest.mark.parametrize(
+    "time_to_beat_data, expected",
+    [
+        ([{"id": 71, "normally": 43503}], {}),
+        ([{"id": 71, "game_id": 231}], {"231": {"id": 71, "game_id": 231}}),
+        ([], {}),
+        ([{}], {}),
+    ],
+    ids=["no_game_id", "no_playtime", "empty_api_response", "empty_api_dictionary"],
+)
+def test_get_time_to_beat_map_invalid_api_response(time_to_beat_data, expected):
+    time_to_beat_map = IGDBClient.get_time_to_beat_map(time_to_beat_data)
+
+    assert time_to_beat_map == expected
