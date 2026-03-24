@@ -18,40 +18,6 @@ class ConfigurationError(Exception):
     pass
 
 
-def get_igdb_game_ids(json_igdb_data):
-    igdb_game_ids = set()
-    for g in json_igdb_data:
-        if not g.get("game", {}).get("id") or not g.get("uid"):
-            continue
-        igdb_game_ids.add(g.get("game", {}).get("id"))
-    return igdb_game_ids
-
-
-def get_time_to_beat_map(time_to_beat_data):
-    time_to_beat_map = {}
-    for game in time_to_beat_data:
-        if not game.get("game_id"):
-            continue
-        time_to_beat_map[str(game.get("game_id"))] = game
-    return time_to_beat_map
-
-
-def get_merged_game_and_time_to_beat_data(json_igdb_data, time_to_beat_map):
-    igdb_data_map = {}
-
-    for game in json_igdb_data:
-        key = str(game.get("uid"))
-        igdb_game = game.get("game", {})
-        if not key or not igdb_game:
-            continue
-        igdb_data_map[key] = igdb_game
-        igdb_game_id = str(igdb_game.get("id"))
-        time_to_beat_sec = time_to_beat_map.get(igdb_game_id, {}).get("normally", 0)
-        time_to_beat_h = round(time_to_beat_sec / 3600, 1)
-        igdb_data_map[key]["time_to_beat"] = time_to_beat_h
-    return igdb_data_map
-
-
 class IGDBClient:
     def __init__(self, IGDB_CLIENT_ID, IGDB_CLIENT_SECRET):
         if (
@@ -141,9 +107,43 @@ class IGDBClient:
         ACCESS_TOKEN = self.get_access_token()
         wrapper = IGDBWrapper(self.IGDB_CLIENT_ID, ACCESS_TOKEN)
         json_igdb_data = self._get_igdb_basic_game_data(steam_app_ids, wrapper)
-        igdb_game_ids = get_igdb_game_ids(json_igdb_data)
+        igdb_game_ids = self.get_igdb_game_ids(json_igdb_data)
         time_to_beat_data = self._get_igdb_time_to_beat_data(igdb_game_ids, wrapper)
-        time_to_beat_map = get_time_to_beat_map(time_to_beat_data)
-        igdb_data_map = get_merged_game_and_time_to_beat_data(json_igdb_data, time_to_beat_map)
+        time_to_beat_map = self.get_time_to_beat_map(time_to_beat_data)
+        igdb_data_map = self.get_merged_game_and_time_to_beat_data(json_igdb_data, time_to_beat_map)
 
+        return igdb_data_map
+
+    @staticmethod
+    def get_igdb_game_ids(json_igdb_data):
+        igdb_game_ids = set()
+        for g in json_igdb_data:
+            if not g.get("game", {}).get("id") or not g.get("uid"):
+                continue
+            igdb_game_ids.add(g.get("game", {}).get("id"))
+        return igdb_game_ids
+
+    @staticmethod
+    def get_time_to_beat_map(time_to_beat_data):
+        time_to_beat_map = {}
+        for game in time_to_beat_data:
+            if not game.get("game_id"):
+                continue
+            time_to_beat_map[str(game.get("game_id"))] = game
+        return time_to_beat_map
+
+    @staticmethod
+    def get_merged_game_and_time_to_beat_data(json_igdb_data, time_to_beat_map):
+        igdb_data_map = {}
+
+        for game in json_igdb_data:
+            key = str(game.get("uid"))
+            igdb_game = game.get("game", {})
+            if not key or not igdb_game:
+                continue
+            igdb_data_map[key] = igdb_game
+            igdb_game_id = str(igdb_game.get("id"))
+            time_to_beat_sec = time_to_beat_map.get(igdb_game_id, {}).get("normally", 0)
+            time_to_beat_h = round(time_to_beat_sec / 3600, 1)
+            igdb_data_map[key]["time_to_beat"] = time_to_beat_h
         return igdb_data_map
