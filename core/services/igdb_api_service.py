@@ -18,6 +18,40 @@ class ConfigurationError(Exception):
     pass
 
 
+def get_igdb_game_ids(json_igdb_data):
+    igdb_game_ids = set()
+    for g in json_igdb_data:
+        if not g.get("game", {}).get("id") or not g.get("uid"):
+            continue
+        igdb_game_ids.add(g.get("game", {}).get("id"))
+    return igdb_game_ids
+
+
+def get_time_to_beat_map(time_to_beat_data):
+    time_to_beat_map = {}
+    for game in time_to_beat_data:
+        if not game.get("game_id"):
+            continue
+        time_to_beat_map[str(game.get("game_id"))] = game
+    return time_to_beat_map
+
+
+def get_merged_game_and_time_to_beat_data(json_igdb_data, time_to_beat_map):
+    igdb_data_map = {}
+
+    for game in json_igdb_data:
+        key = str(game.get("uid"))
+        igdb_game = game.get("game", {})
+        if not key or not igdb_game:
+            continue
+        igdb_data_map[key] = igdb_game
+        igdb_game_id = str(igdb_game.get("id"))
+        time_to_beat_sec = time_to_beat_map.get(igdb_game_id, {}).get("normally", 0)
+        time_to_beat_h = round(time_to_beat_sec / 3600, 1)
+        igdb_data_map[key]["time_to_beat"] = time_to_beat_h
+    return igdb_data_map
+
+
 class IGDBClient:
     def __init__(self, IGDB_CLIENT_ID, IGDB_CLIENT_SECRET):
         if (
@@ -76,31 +110,20 @@ class IGDBClient:
                 logger.error(f"Error: Failed to get IGDB ACCESS TOKEN: {e}")
                 raise
 
-    def get_igdb_data(self, steam_app_ids):
-        if not steam_app_ids:
-            return {}
-        ACCESS_TOKEN = self.get_access_token()
-        wrapper = IGDBWrapper(self.IGDB_CLIENT_ID, ACCESS_TOKEN)
-
+    def _get_igdb_basic_game_data(self, steam_app_ids, wrapper):
         json_igdb_data = []
         for chunk in chunk_list(steam_app_ids, 500):
             steam_app_ids_string = ",".join([f'"{s_id}"' for s_id in chunk])
             byte_igdb_data = wrapper.api_request(
                 "external_games",
                 f"""fields uid, game.name, game.themes.name, game.themes.id, game.rating,
-                game.cover.url; limit 500;
-                where external_game_source = 1 & uid = ({steam_app_ids_string});""",
+                    game.cover.url; limit 500;
+                    where external_game_source = 1 & uid = ({steam_app_ids_string});""",
             )
             json_igdb_data.extend(json.loads(byte_igdb_data))
+        return json_igdb_data
 
-        igdb_data_map = {}
-
-        igdb_game_ids = set()
-
-        for g in json_igdb_data:
-            if not g.get("game", {}).get("id") or not g.get("uid"):
-                continue
-            igdb_game_ids.add(g.get("game", {}).get("id"))
+    def _get_igdb_time_to_beat_data(self, igdb_game_ids, wrapper):
         igdb_game_ids_string = ",".join([f"{gid}" for gid in igdb_game_ids])
         if igdb_game_ids_string:
             time_to_beat_data = wrapper.api_request(
@@ -110,20 +133,17 @@ class IGDBClient:
             time_to_beat_data = json.loads(time_to_beat_data)
         else:
             time_to_beat_data = []
-        time_to_beat_map = {}
-        for game in time_to_beat_data:
-            if not game.get("game_id"):
-                continue
-            time_to_beat_map[str(game.get("game_id"))] = game
+        return time_to_beat_data
 
-        for game in json_igdb_data:
-            key = str(game.get("uid"))
-            igdb_game = game.get("game", {})
-            if not key or not igdb_game:
-                continue
-            igdb_data_map[key] = igdb_game
-            igdb_game_id = str(igdb_game.get("id"))
-            time_to_beat_sec = time_to_beat_map.get(igdb_game_id, {}).get("normally", 0)
-            time_to_beat_h = round(time_to_beat_sec / 3600, 1)
-            igdb_data_map[key]["time_to_beat"] = time_to_beat_h
+    def get_igdb_data(self, steam_app_ids):
+        if not steam_app_ids:
+            return {}
+        ACCESS_TOKEN = self.get_access_token()
+        wrapper = IGDBWrapper(self.IGDB_CLIENT_ID, ACCESS_TOKEN)
+        json_igdb_data = self._get_igdb_basic_game_data(steam_app_ids, wrapper)
+        igdb_game_ids = get_igdb_game_ids(json_igdb_data)
+        time_to_beat_data = self._get_igdb_time_to_beat_data(igdb_game_ids, wrapper)
+        time_to_beat_map = get_time_to_beat_map(time_to_beat_data)
+        igdb_data_map = get_merged_game_and_time_to_beat_data(json_igdb_data, time_to_beat_map)
+
         return igdb_data_map
