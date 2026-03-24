@@ -173,3 +173,53 @@ def test_get_igdb_data_invalid_steam_ids(igdb_client, steam_app_ids):
     igdb_data = igdb_client.get_igdb_data(steam_app_ids)
 
     assert igdb_data == {}
+
+
+def test_get_igdb_game_ids_success():
+    json_igdb_data = [
+        {"id": 1200554, "game": {"id": 28856, "name": "The Crew 2"}, "uid": "646910"},
+        {"id": 2614616, "game": {"id": 132181, "name": "Resident Evil 4"}, "uid": "2050650"},
+    ]
+
+    igdb_game_ids = IGDBClient.get_igdb_game_ids(json_igdb_data)
+
+    assert igdb_game_ids == {28856, 132181}
+
+
+def test_get_igdb_game_ids_duplicates():
+    json_igdb_data = [
+        {"id": 1200554, "game": {"id": 28856, "name": "The Crew 2"}, "uid": "646910"},
+        {"id": 2614616, "game": {"id": 132181, "name": "Resident Evil 4"}, "uid": "2050650"},
+        {"id": 2614616, "game": {"id": 132181, "name": "Resident Evil 4"}, "uid": "2050650"},
+    ]
+
+    igdb_game_ids = IGDBClient.get_igdb_game_ids(json_igdb_data)
+
+    assert igdb_game_ids == {28856, 132181}
+
+
+def test_get_igdb_game_ids_skips_invalid_entries():
+    json_igdb_data = [
+        {"id": 1200554, "game": {"id": 28856, "name": "The Crew 2"}, "uid": "646910"},
+        {"id": 2614616, "game": {"id": 132181, "name": "Resident Evil 4"}},
+    ]
+
+    igdb_game_ids = IGDBClient.get_igdb_game_ids(json_igdb_data)
+
+    assert igdb_game_ids == {28856}
+
+
+@pytest.mark.parametrize(
+    "json_igdb_data",
+    [
+        [{"id": 1200554, "game": {"name": "The Crew 2"}, "uid": "646910"}],
+        [{"id": 1200554, "game": {"id": 28856, "name": "The Crew 2"}}],
+        [],
+        [{}],
+    ],
+    ids=["no_id", "no_uid", "empty_api_response", "empty_api_dictionary"],
+)
+def test_get_igdb_game_ids_invalid_igdb_data(json_igdb_data):
+    igdb_game_ids = IGDBClient.get_igdb_game_ids(json_igdb_data)
+
+    assert igdb_game_ids == set()
