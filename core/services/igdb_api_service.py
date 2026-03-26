@@ -110,7 +110,7 @@ class IGDBClient:
         igdb_game_ids = self.get_igdb_game_ids(json_igdb_data)
         time_to_beat_data = self._get_igdb_time_to_beat_data(igdb_game_ids, wrapper)
         time_to_beat_map = self.get_time_to_beat_map(time_to_beat_data)
-        igdb_data_map = self.get_merged_game_and_time_to_beat_data(json_igdb_data, time_to_beat_map)
+        igdb_data_map = self.get_merged_igdb_data(json_igdb_data, time_to_beat_map)
 
         return igdb_data_map
 
@@ -133,14 +133,15 @@ class IGDBClient:
         return time_to_beat_map
 
     @staticmethod
-    def get_merged_game_and_time_to_beat_data(json_igdb_data, time_to_beat_map):
+    def get_merged_igdb_data(json_igdb_data, time_to_beat_map):
         igdb_data_map = {}
 
         for game in json_igdb_data:
-            key = str(game.get("uid"))
+            raw_key = game.get("uid")
             igdb_game = game.get("game", {})
-            if not key or not igdb_game:
+            if not raw_key or not igdb_game:
                 continue
+            key = str(raw_key)
             igdb_data_map[key] = igdb_game
             igdb_game_id = str(igdb_game.get("id"))
             time_to_beat_sec = time_to_beat_map.get(igdb_game_id, {}).get("normally", 0)

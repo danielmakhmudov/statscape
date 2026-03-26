@@ -266,3 +266,55 @@ def test_get_time_to_beat_map_invalid_api_response(time_to_beat_data, expected):
     time_to_beat_map = IGDBClient.get_time_to_beat_map(time_to_beat_data)
 
     assert time_to_beat_map == expected
+
+
+def test_get_merged_igdb_data_mixed_data():
+    json_igdb_data = [
+        {"game": {"id": 231, "name": "The Crew 2"}, "uid": "646910"},
+        {"game": {"id": 132181, "name": "Resident Evil 4"}, "uid": "2050650"},
+        {"game": {"id": 12345, "name": "Game 3"}, "uid": "00000"},
+    ]
+    time_to_beat_map = {
+        "231": {"id": 71, "game_id": 231, "normally": 3600},
+        "132181": {"id": 1747, "game_id": 132181, "normally": 5400},
+    }
+
+    merged_data = IGDBClient.get_merged_igdb_data(json_igdb_data, time_to_beat_map)
+
+    assert merged_data == {
+        "646910": {"id": 231, "name": "The Crew 2", "time_to_beat": 1.0},
+        "2050650": {"id": 132181, "name": "Resident Evil 4", "time_to_beat": 1.5},
+        "00000": {"id": 12345, "name": "Game 3", "time_to_beat": 0.0},
+    }
+
+
+@pytest.mark.parametrize(
+    "json_igdb_data",
+    [
+        [{"game": {}, "uid": "646910"}],
+        [{"uid": "646910"}],
+        [{"game": {"id": 231, "name": "The Crew 2"}}],
+        [],
+    ],
+    ids=["empty_game_dict", "no_game_dict", "no_uid", "empty_igdb_data"],
+)
+def test_get_merged_igdb_data_invalid_game_data(json_igdb_data):
+    time_to_beat_map = {
+        "231": {"id": 71, "game_id": 231, "normally": 3600},
+    }
+    merged_data = IGDBClient.get_merged_igdb_data(json_igdb_data, time_to_beat_map)
+
+    assert merged_data == {}
+
+
+def test_get_merged_igdb_data_no_match():
+    json_igdb_data = [{"game": {"id": 231, "name": "The Crew 2"}, "uid": "646910"}]
+    time_to_beat_map = {
+        "100": {"id": 71, "game_id": 100, "normally": 3600},
+    }
+
+    merged_data = IGDBClient.get_merged_igdb_data(json_igdb_data, time_to_beat_map)
+
+    assert merged_data == {
+        "646910": {"id": 231, "name": "The Crew 2", "time_to_beat": 0.0},
+    }
