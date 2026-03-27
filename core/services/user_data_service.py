@@ -66,6 +66,7 @@ def update_user_data(steam_id):
 
 
 def get_or_fetch_user_library(steam_id, force_update=False):
+    # ---------------------------------------------
     try:
         user = User.objects.get(steam_id=steam_id)
     except User.DoesNotExist:
@@ -75,7 +76,7 @@ def get_or_fetch_user_library(steam_id, force_update=False):
         user_games = UserGame.objects.filter(user=user)
         if user_games.exists():
             return user_games
-
+    # -----------------------------------------------------
     steam_api = SteamAPI()
     igdb_client = IGDBClient(
         IGDB_CLIENT_ID=os.getenv("IGDB_CLIENT_ID"),
@@ -97,7 +98,7 @@ def get_or_fetch_user_library(steam_id, force_update=False):
 
     if not api_games_map:
         return UserGame.objects.none()
-
+    # -----------------------------------------------------
     igdb_data_map = igdb_client.get_igdb_data(steam_app_ids)
     themes_list = []
     for t in igdb_data_map.values():
@@ -111,7 +112,7 @@ def get_or_fetch_user_library(steam_id, force_update=False):
     themes_objects = [
         Theme(igdb_id=t.get("id"), name=t.get("name")) for t in unique_themes.values()
     ]
-
+    # -----------------------------------------------------
     game_instances = []
     for app_id, g in api_games_map.items():
         name = g.get("name") or ""
@@ -139,7 +140,7 @@ def get_or_fetch_user_library(steam_id, force_update=False):
         )
     if not game_instances:
         return UserGame.objects.none()
-
+    # -----------------------------------------------------
     with transaction.atomic():
         Theme.objects.bulk_create(
             themes_objects,
