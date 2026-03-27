@@ -80,25 +80,32 @@ class IGDBClient:
         json_igdb_data = []
         for chunk in chunk_list(steam_app_ids, 500):
             steam_app_ids_string = ",".join([f'"{s_id}"' for s_id in chunk])
-            byte_igdb_data = wrapper.api_request(
-                "external_games",
-                f"""fields uid, game.name, game.themes.name, game.themes.id, game.rating,
-                    game.cover.url; limit 500;
-                    where external_game_source = 1 & uid = ({steam_app_ids_string});""",
-            )
-            json_igdb_data.extend(json.loads(byte_igdb_data))
+            if steam_app_ids_string:
+                byte_igdb_data = wrapper.api_request(
+                    "external_games",
+                    f"""fields uid, game.name, game.themes.name, game.themes.id, game.rating,
+                        game.cover.url; limit 500;
+                        where external_game_source = 1 & uid = ({steam_app_ids_string});""",
+                )
+                json_igdb_data.extend(json.loads(byte_igdb_data))
+            else:
+                continue
         return json_igdb_data
 
     def _get_igdb_time_to_beat_data(self, igdb_game_ids, wrapper):
-        igdb_game_ids_string = ",".join([f"{gid}" for gid in igdb_game_ids])
-        if igdb_game_ids_string:
-            time_to_beat_data = wrapper.api_request(
-                "game_time_to_beats",
-                f"fields game_id, normally; limit 500; where game_id = ({igdb_game_ids_string});",
-            )
-            time_to_beat_data = json.loads(time_to_beat_data)
-        else:
-            time_to_beat_data = []
+        time_to_beat_data = []
+        for chunk in chunk_list(igdb_game_ids, 500):
+            igdb_game_ids_string = ",".join([f"{gid}" for gid in chunk])
+            if igdb_game_ids_string:
+                byte_time_to_beat_data = wrapper.api_request(
+                    "game_time_to_beats",
+                    f"""fields game_id, normally; limit 500;
+                        where game_id = ({igdb_game_ids_string});""",
+                )
+                time_to_beat_data.extend(json.loads(byte_time_to_beat_data))
+            else:
+                continue
+
         return time_to_beat_data
 
     def get_igdb_data(self, steam_app_ids):

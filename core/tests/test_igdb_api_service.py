@@ -168,13 +168,6 @@ def test_get_access_token_invalid_expires_in_value(igdb_client, expires_in, monk
     assert "Error: invalid expires_in value in IGDB response" in caplog.text
 
 
-@pytest.mark.parametrize("steam_app_ids", [[], None], ids=["empty_list", "None_value"])
-def test_get_igdb_data_invalid_steam_ids(igdb_client, steam_app_ids):
-    igdb_data = igdb_client.get_igdb_data(steam_app_ids)
-
-    assert igdb_data == {}
-
-
 def test_get_igdb_game_ids_success():
     json_igdb_data = [
         {"id": 1200554, "game": {"id": 28856, "name": "The Crew 2"}, "uid": "646910"},
@@ -318,3 +311,60 @@ def test_get_merged_igdb_data_no_match():
     assert merged_data == {
         "646910": {"id": 231, "name": "The Crew 2", "time_to_beat": 0.0},
     }
+
+
+def test_get_igdb_data_success(monkeypatch, igdb_client):
+    steam_app_ids = ["646910", "2050650"]
+
+    game_info = [
+        {
+            "id": 1200554,
+            "game": {
+                "id": 28856,
+                "name": "The Crew 2",
+            },
+            "uid": "646910",
+        },
+        {
+            "id": 2614616,
+            "game": {
+                "id": 132181,
+                "name": "Resident Evil 4",
+            },
+            "uid": "2050650",
+        },
+    ]
+    playtime_info = [
+        {"id": 6829, "game_id": 28856, "normally": 7200},
+        {"id": 1747, "game_id": 132181, "normally": 3600},
+    ]
+    mock_game_response = MagicMock(return_value=game_info)
+    mock_playtime_response = MagicMock(return_value=playtime_info)
+
+    monkeypatch.setattr(
+        "core.services.igdb_api_service.IGDBClient.get_access_token",
+        MagicMock(return_value="fake-token"),
+    )
+    monkeypatch.setattr("core.services.igdb_api_service.IGDBWrapper", MagicMock())
+
+    monkeypatch.setattr(
+        "core.services.igdb_api_service.IGDBClient._get_igdb_basic_game_data", mock_game_response
+    )
+    monkeypatch.setattr(
+        "core.services.igdb_api_service.IGDBClient._get_igdb_time_to_beat_data",
+        mock_playtime_response,
+    )
+
+    igdb_data = igdb_client.get_igdb_data(steam_app_ids)
+
+    assert igdb_data == {
+        "646910": {"id": 28856, "name": "The Crew 2", "time_to_beat": 2.0},
+        "2050650": {"id": 132181, "name": "Resident Evil 4", "time_to_beat": 1.0},
+    }
+
+
+@pytest.mark.parametrize("steam_app_ids", [[], None], ids=["empty_list", "None_value"])
+def test_get_igdb_data_invalid_steam_ids(igdb_client, steam_app_ids):
+    igdb_data = igdb_client.get_igdb_data(steam_app_ids)
+
+    assert igdb_data == {}
