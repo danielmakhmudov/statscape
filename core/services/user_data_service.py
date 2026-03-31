@@ -1,3 +1,4 @@
+from django.db.models import QuerySet
 from core.services.steam_api_service import SteamAPI
 from users.models import User
 from core.models import UserGame, Game, Theme
@@ -66,6 +67,28 @@ def update_user_data(steam_id):
 
 
 def get_or_fetch_user_library(steam_id, force_update=False):
+    user_or_library_from_db = _get_user_library_from_db(steam_id, force_update)
+    if isinstance(user_or_library_from_db, QuerySet):
+        return user_or_library_from_db
+    else:
+        user = user_or_library_from_db
+        steam_api_games_map, steam_app_ids = _fetch_steam_api_data(user)
+        if not steam_api_games_map:
+            return UserGame.objects.none()
+        igdb_data_map, themes_objects, unique_themes = _fetch_igdb_api_data(steam_app_ids)
+        game_instances = _prepare_game_instances(steam_api_games_map, igdb_data_map)
+        if not game_instances:
+            return UserGame.objects.none()
+        with transaction.atomic():
+            themes_map = _get_themes_map(themes_objects, unique_themes)
+            games_map = _get_games_map(game_instances, steam_api_games_map)
+            _join_games_and_themes(games_map, igdb_data_map, themes_map)
+            user_library = _join_user_game_instances(user, steam_api_games_map, games_map)
+
+            return user_library
+
+
+def _get_user_library_from_db(steam_id, force_update=False):
     try:
         user = User.objects.get(steam_id=steam_id)
     except User.DoesNotExist:
@@ -75,16 +98,15 @@ def get_or_fetch_user_library(steam_id, force_update=False):
         user_games = UserGame.objects.filter(user=user)
         if user_games.exists():
             return user_games
+    return user
 
+
+def _fetch_steam_api_data(user):
     steam_api = SteamAPI()
-    igdb_client = IGDBClient(
-        IGDB_CLIENT_ID=os.getenv("IGDB_CLIENT_ID"),
-        IGDB_CLIENT_SECRET=os.getenv("IGDB_CLIENT_SECRET"),
-    )
     data = steam_api.get_user_library(steam_id=user.steam_id)
     games = data.get("games") if isinstance(data, dict) else None
     if not games:
-        return UserGame.objects.none()
+        return ({}, [])
     api_games_map = {}
     steam_app_ids = []
     for g in games:
@@ -96,9 +118,18 @@ def get_or_fetch_user_library(steam_id, force_update=False):
         api_games_map[str(app_id)] = g
 
     if not api_games_map:
-        return UserGame.objects.none()
+        return ({}, [])
+    return api_games_map, steam_app_ids
 
+
+def _fetch_igdb_api_data(steam_app_ids):
+    igdb_client = IGDBClient(
+        IGDB_CLIENT_ID=os.getenv("IGDB_CLIENT_ID"),
+        IGDB_CLIENT_SECRET=os.getenv("IGDB_CLIENT_SECRET"),
+    )
     igdb_data_map = igdb_client.get_igdb_data(steam_app_ids)
+    if not isinstance(igdb_data_map, dict):
+        return {}, [], {}
     themes_list = []
     for t in igdb_data_map.values():
         themes_list.extend(t.get("themes", []))
@@ -112,8 +143,12 @@ def get_or_fetch_user_library(steam_id, force_update=False):
         Theme(igdb_id=t.get("id"), name=t.get("name")) for t in unique_themes.values()
     ]
 
+    return igdb_data_map, themes_objects, unique_themes
+
+
+def _prepare_game_instances(steam_api_games_map, igdb_data_map):
     game_instances = []
-    for app_id, g in api_games_map.items():
+    for app_id, g in steam_api_games_map.items():
         name = g.get("name") or ""
 
         rating = igdb_data_map.get(app_id, {}).get("rating", 0.0)
@@ -138,81 +173,90 @@ def get_or_fetch_user_library(steam_id, force_update=False):
             )
         )
     if not game_instances:
+        return []
+    return game_instances
+
+
+def _get_themes_map(themes_objects, unique_themes):
+    Theme.objects.bulk_create(
+        themes_objects,
+        update_conflicts=True,
+        unique_fields=["igdb_id"],
+        update_fields=["name"],
+        batch_size=1000,
+    )
+    themes_in_db = Theme.objects.filter(igdb_id__in=unique_themes.keys())
+    themes_map = {t.igdb_id: t for t in themes_in_db}
+
+    return themes_map
+
+
+def _get_games_map(game_instances, steam_api_games_map):
+    Game.objects.bulk_create(
+        game_instances,
+        update_conflicts=True,
+        unique_fields=["app_id"],
+        update_fields=["name", "logo_url", "header_url", "rating", "time_to_beat"],
+        batch_size=1000,
+    )
+    games_in_db = Game.objects.filter(app_id__in=steam_api_games_map.keys())
+    games_map = {g.app_id: g for g in games_in_db}
+    return games_map
+
+
+def _join_games_and_themes(games_map, igdb_data_map, themes_map):
+    game_theme_relations = []
+    for uid, game in igdb_data_map.items():
+        game_obj = games_map.get(uid)
+        if not game_obj:
+            continue
+        for t in game.get("themes", []):
+            theme_obj = themes_map.get(t.get("id"))
+            if theme_obj:
+                game_theme_relations.append(
+                    Game.themes.through(game_id=game_obj.id, theme_id=theme_obj.id)
+                )
+    if game_theme_relations:
+        Game.themes.through.objects.bulk_create(
+            game_theme_relations,
+            ignore_conflicts=True,
+            batch_size=1000,
+        )
+
+
+def _join_user_game_instances(user, steam_api_games_map, game_map):
+    user_game_instances = []
+
+    for app_id, g in steam_api_games_map.items():
+        game_obj = game_map.get(app_id)
+        if not game_obj:
+            continue
+
+        total_playtime = g.get("playtime_forever", 0)
+        recent_playtime = g.get("playtime_2weeks", 0)
+
+        rtime = g.get("rtime_last_played")
+        last_played = datetime.fromtimestamp(int(rtime), tz=dt_timezone.utc) if rtime else None
+
+        user_game_instances.append(
+            UserGame(
+                user=user,
+                game=game_obj,
+                total_playtime=total_playtime,
+                recent_playtime=recent_playtime,
+                last_played=last_played,
+            )
+        )
+    if not user_game_instances:
         return UserGame.objects.none()
 
-    with transaction.atomic():
-        Theme.objects.bulk_create(
-            themes_objects,
-            update_conflicts=True,
-            unique_fields=["igdb_id"],
-            update_fields=["name"],
-            batch_size=1000,
-        )
-        themes_in_db = Theme.objects.filter(igdb_id__in=unique_themes.keys())
-        themes_map = {t.igdb_id: t for t in themes_in_db}
-
-        Game.objects.bulk_create(
-            game_instances,
-            update_conflicts=True,
-            unique_fields=["app_id"],
-            update_fields=["name", "logo_url", "header_url", "rating", "time_to_beat"],
-            batch_size=1000,
-        )
-
-        games_in_db = Game.objects.filter(app_id__in=api_games_map.keys())
-        game_map = {g.app_id: g for g in games_in_db}
-        game_theme_relations = []
-        for uid, game in igdb_data_map.items():
-            game_obj = game_map.get(uid)
-            if not game_obj:
-                continue
-            for t in game.get("themes", []):
-                theme_obj = themes_map.get(t.get("id"))
-                if theme_obj:
-                    game_theme_relations.append(
-                        Game.themes.through(game_id=game_obj.id, theme_id=theme_obj.id)
-                    )
-        if game_theme_relations:
-            Game.themes.through.objects.bulk_create(
-                game_theme_relations,
-                ignore_conflicts=True,
-                batch_size=1000,
-            )
-
-        user_game_instances = []
-
-        for app_id, g in api_games_map.items():
-            game_obj = game_map.get(app_id)
-            if not game_obj:
-                continue
-
-            total_playtime = g.get("playtime_forever", 0)
-            recent_playtime = g.get("playtime_2weeks", 0)
-
-            rtime = g.get("rtime_last_played")
-            last_played = datetime.fromtimestamp(int(rtime), tz=dt_timezone.utc) if rtime else None
-
-            user_game_instances.append(
-                UserGame(
-                    user=user,
-                    game=game_obj,
-                    total_playtime=total_playtime,
-                    recent_playtime=recent_playtime,
-                    last_played=last_played,
-                )
-            )
-        if not user_game_instances:
-            return UserGame.objects.none()
-
-        UserGame.objects.bulk_create(
-            user_game_instances,
-            update_conflicts=True,
-            unique_fields=["user", "game"],
-            update_fields=["total_playtime", "recent_playtime", "last_played"],
-            batch_size=1000,
-        )
-        return (
-            UserGame.objects.filter(user=user)
-            .select_related("game")
-            .prefetch_related("game__themes")
-        )
+    UserGame.objects.bulk_create(
+        user_game_instances,
+        update_conflicts=True,
+        unique_fields=["user", "game"],
+        update_fields=["total_playtime", "recent_playtime", "last_played"],
+        batch_size=1000,
+    )
+    return (
+        UserGame.objects.filter(user=user).select_related("game").prefetch_related("game__themes")
+    )
