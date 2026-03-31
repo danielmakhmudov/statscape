@@ -1,8 +1,14 @@
 import logging
 from unittest.mock import MagicMock
+from django.db.models import QuerySet
 import pytest
 from datetime import datetime, timezone
-from core.services.user_data_service import get_or_fetch_user_profile, update_user_data
+from core.factories import UserGameFactory
+from core.services.user_data_service import (
+    get_or_fetch_user_profile,
+    update_user_data,
+    _get_user_library_from_db,
+)
 from users.factories import UserFactory
 from users.models import User
 
@@ -145,3 +151,47 @@ def test_update_user_data_missing_timecreated(mock_steam_api, monkeypatch):
 
     assert updated_user.steam_id == "12345"
     assert updated_user.steam_user_since is None
+
+
+@pytest.mark.django_db
+def test_get_user_library_from_db_success():
+    UserFactory.create(steam_id="12345")
+    user = User.objects.get(steam_id="12345")
+    UserGameFactory.create_batch(3, user=user)
+
+    user_library = _get_user_library_from_db(steam_id="12345", force_update=False)
+
+    assert user_library.count() == 3
+    assert isinstance(user_library, QuerySet)
+    assert all(ul.user == user for ul in user_library)
+
+
+@pytest.mark.django_db
+def test_get_user_library_from_db_missing_user():
+    UserGameFactory.create_batch(3)
+
+    user_library = _get_user_library_from_db(steam_id="12345678", force_update=False)
+
+    assert isinstance(user_library, QuerySet)
+    assert user_library.count() == 0
+
+
+@pytest.mark.django_db
+def test_get_user_library_from_db_user_has_no_games():
+    UserFactory.create(steam_id="12345")
+    result = _get_user_library_from_db(steam_id="12345", force_update=False)
+
+    assert isinstance(result, User)
+    assert result.steam_id == "12345"
+
+
+@pytest.mark.django_db
+def test_get_user_library_from_db_force_update():
+    UserFactory.create(steam_id="12345")
+    user = User.objects.get(steam_id="12345")
+    UserGameFactory.create_batch(3, user=user)
+
+    result = _get_user_library_from_db(steam_id="12345", force_update=True)
+
+    assert isinstance(result, User)
+    assert result.steam_id == "12345"
