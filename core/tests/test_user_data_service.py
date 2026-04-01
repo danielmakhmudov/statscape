@@ -8,6 +8,7 @@ from core.services.user_data_service import (
     get_or_fetch_user_profile,
     update_user_data,
     _get_user_library_from_db,
+    _fetch_steam_api_data,
 )
 from users.factories import UserFactory
 from users.models import User
@@ -195,3 +196,38 @@ def test_get_user_library_from_db_force_update():
 
     assert isinstance(result, User)
     assert result.steam_id == "12345"
+
+
+@pytest.mark.django_db
+def test_fetch_steam_api_data_empty_api_response(monkeypatch, mock_steam_api):
+    mock_steam_api.get_user_library.return_value = {}
+    user = UserFactory.create(steam_id="12345")
+
+    api_games_map, steam_app_ids = _fetch_steam_api_data(user)
+
+    assert (api_games_map, steam_app_ids) == ({}, [])
+
+
+@pytest.mark.django_db
+def test_fetch_steam_api_data_success(monkeypatch, mock_steam_api):
+    mock_steam_api.get_user_library.return_value = {
+        "response": {
+            "game_count": 3,
+            "games": [
+                {
+                    "appid": 100,
+                },
+                {
+                    "appid": 200,
+                },
+                {
+                    "appid": 300,
+                },
+            ],
+        }
+    }
+    user = UserFactory.create(steam_id="12345")
+
+    api_games_map, steam_app_ids = _fetch_steam_api_data(user)
+
+    assert (api_games_map, steam_app_ids) == ({}, [])
