@@ -211,21 +211,74 @@ def test_fetch_steam_api_data_empty_api_response(monkeypatch, mock_steam_api):
 @pytest.mark.django_db
 def test_fetch_steam_api_data_success(monkeypatch, mock_steam_api):
     mock_steam_api.get_user_library.return_value = {
-        "response": {
-            "game_count": 3,
-            "games": [
-                {
-                    "appid": 100,
-                },
-                {
-                    "appid": 200,
-                },
-                {
-                    "appid": 300,
-                },
-            ],
-        }
+        "games": [
+            {"appid": 100, "name": "Game A"},
+            {"appid": 200, "name": "Game B"},
+            {"appid": 300, "name": "Game C"},
+        ]
     }
+    user = UserFactory.create(steam_id="12345")
+
+    api_games_map, steam_app_ids = _fetch_steam_api_data(user)
+
+    assert steam_app_ids == ["100", "200", "300"]
+    assert api_games_map == {
+        "100": {"appid": 100, "name": "Game A"},
+        "200": {"appid": 200, "name": "Game B"},
+        "300": {"appid": 300, "name": "Game C"},
+    }
+    mock_steam_api.get_user_library.assert_called_once_with(steam_id="12345")
+
+
+@pytest.mark.django_db
+def test_fetch_steam_api_data_without_games_key(mock_steam_api):
+    mock_steam_api.get_user_library.return_value = {"response": {"game_count": 3}}
+    user = UserFactory.create(steam_id="12345")
+
+    api_games_map, steam_app_ids = _fetch_steam_api_data(user)
+
+    assert (api_games_map, steam_app_ids) == ({}, [])
+
+
+@pytest.mark.django_db
+def test_fetch_steam_api_data_skips_games_without_appid(mock_steam_api, caplog):
+    mock_steam_api.get_user_library.return_value = {
+        "games": [
+            {"name": "No Id Game"},
+            {"appid": 200, "name": "Valid Game"},
+            {"appid": None, "name": "Also Invalid"},
+        ]
+    }
+    user = UserFactory.create(steam_id="12345")
+
+    with caplog.at_level(logging.WARNING):
+        api_games_map, steam_app_ids = _fetch_steam_api_data(user)
+
+    assert steam_app_ids == ["200"]
+    assert api_games_map == {"200": {"appid": 200, "name": "Valid Game"}}
+    assert "Skipped game without appid: No Id Game" in caplog.text
+    assert "Skipped game without appid: Also Invalid" in caplog.text
+
+
+@pytest.mark.django_db
+def test_fetch_steam_api_data_all_invalid_games_returns_empty(mock_steam_api):
+    mock_steam_api.get_user_library.return_value = {
+        "games": [
+            {"name": "Missing AppId"},
+            {"appid": None, "name": "None AppId"},
+            {},
+        ]
+    }
+    user = UserFactory.create(steam_id="12345")
+
+    api_games_map, steam_app_ids = _fetch_steam_api_data(user)
+
+    assert (api_games_map, steam_app_ids) == ({}, [])
+
+
+@pytest.mark.django_db
+def test_fetch_steam_api_data_non_dict_response_returns_empty(mock_steam_api):
+    mock_steam_api.get_user_library.return_value = None
     user = UserFactory.create(steam_id="12345")
 
     api_games_map, steam_app_ids = _fetch_steam_api_data(user)
