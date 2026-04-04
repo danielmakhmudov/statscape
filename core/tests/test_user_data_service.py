@@ -13,6 +13,7 @@ from core.services.user_data_service import (
     _prepare_game_instances,
     _get_themes_map,
     _get_games_map,
+    _join_games_and_themes,
 )
 from users.factories import UserFactory
 from users.models import User
@@ -565,3 +566,104 @@ def test_get_games_map_updates_existing_game_on_conflict():
     )
     assert updated_game.rating == 95.0
     assert updated_game.time_to_beat == 15.0
+
+
+@pytest.mark.django_db
+def test_join_games_and_themes_success_creates_relations():
+    game_100 = Game.objects.create(
+        app_id="100",
+        name="Game A",
+        logo_url=None,
+        header_url="https://cdn.cloudflare.steamstatic.com/steam/apps/100/header.jpg",
+        rating=80.0,
+        time_to_beat=8.0,
+    )
+    game_200 = Game.objects.create(
+        app_id="200",
+        name="Game B",
+        logo_url=None,
+        header_url="https://cdn.cloudflare.steamstatic.com/steam/apps/200/header.jpg",
+        rating=70.0,
+        time_to_beat=6.0,
+    )
+    theme_1 = Theme.objects.create(igdb_id=1, name="RPG")
+    theme_2 = Theme.objects.create(igdb_id=2, name="Adventure")
+    games_map = {"100": game_100, "200": game_200}
+    themes_map = {1: theme_1, 2: theme_2}
+    igdb_data_map = {
+        "100": {"themes": [{"id": 1}, {"id": 2}]},
+        "200": {"themes": [{"id": 2}]},
+    }
+
+    _join_games_and_themes(games_map, igdb_data_map, themes_map)
+
+    through = Game.themes.through.objects
+    assert through.filter(game_id=game_100.id, theme_id=theme_1.id).exists() is True
+    assert through.filter(game_id=game_100.id, theme_id=theme_2.id).exists() is True
+    assert through.filter(game_id=game_200.id, theme_id=theme_2.id).exists() is True
+
+
+@pytest.mark.django_db
+def test_join_games_and_themes_skips_missing_uid_and_missing_theme_obj():
+    game_100 = Game.objects.create(
+        app_id="100",
+        name="Game A",
+        logo_url=None,
+        header_url="https://cdn.cloudflare.steamstatic.com/steam/apps/100/header.jpg",
+        rating=80.0,
+        time_to_beat=8.0,
+    )
+    theme_1 = Theme.objects.create(igdb_id=1, name="RPG")
+    games_map = {"100": game_100}
+    themes_map = {1: theme_1}
+    igdb_data_map = {
+        "100": {"themes": [{"id": 1}, {"id": 999}]},
+        "999": {"themes": [{"id": 1}]},
+    }
+
+    _join_games_and_themes(games_map, igdb_data_map, themes_map)
+
+    through = Game.themes.through.objects
+    assert through.filter(game_id=game_100.id, theme_id=theme_1.id).exists() is True
+    assert through.count() == 1
+
+
+@pytest.mark.django_db
+def test_join_games_and_themes_empty_relations_does_not_create_anything():
+    game_100 = Game.objects.create(
+        app_id="100",
+        name="Game A",
+        logo_url=None,
+        header_url="https://cdn.cloudflare.steamstatic.com/steam/apps/100/header.jpg",
+        rating=80.0,
+        time_to_beat=8.0,
+    )
+    unrelated_theme = Theme.objects.create(igdb_id=2, name="Adventure")
+    games_map = {"100": game_100}
+    themes_map = {2: unrelated_theme}
+    igdb_data_map = {"100": {"themes": [{"id": 1}]}}
+
+    _join_games_and_themes(games_map, igdb_data_map, themes_map)
+
+    assert Game.themes.through.objects.count() == 0
+
+
+@pytest.mark.django_db
+def test_join_games_and_themes_ignore_conflicts_on_duplicate_relations():
+    game_100 = Game.objects.create(
+        app_id="100",
+        name="Game A",
+        logo_url=None,
+        header_url="https://cdn.cloudflare.steamstatic.com/steam/apps/100/header.jpg",
+        rating=80.0,
+        time_to_beat=8.0,
+    )
+    theme_1 = Theme.objects.create(igdb_id=1, name="RPG")
+    games_map = {"100": game_100}
+    themes_map = {1: theme_1}
+    igdb_data_map = {"100": {"themes": [{"id": 1}]}}
+
+    _join_games_and_themes(games_map, igdb_data_map, themes_map)
+    _join_games_and_themes(games_map, igdb_data_map, themes_map)
+
+    assert Game.themes.through.objects.count() == 1
