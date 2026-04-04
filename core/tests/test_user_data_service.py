@@ -11,6 +11,7 @@ from core.services.user_data_service import (
     _fetch_steam_api_data,
     _fetch_igdb_api_data,
     _prepare_game_instances,
+    _get_themes_map,
 )
 from users.factories import UserFactory
 from users.models import User
@@ -441,3 +442,43 @@ def test_prepare_game_instances_empty_game_map_returns_empty_list():
     game_instances = _prepare_game_instances({}, {"100": {"rating": 90.0}})
 
     assert game_instances == []
+
+
+@pytest.mark.django_db
+def test_get_themes_map_success_creates_and_returns_requested_themes():
+    Theme.objects.create(igdb_id=999, name="Unrelated Theme")
+    themes_objects = [
+        Theme(igdb_id=1, name="RPG"),
+        Theme(igdb_id=2, name="Adventure"),
+    ]
+    unique_themes = {
+        1: {"id": 1, "name": "RPG"},
+        2: {"id": 2, "name": "Adventure"},
+    }
+
+    themes_map = _get_themes_map(themes_objects, unique_themes)
+
+    assert set(themes_map.keys()) == {1, 2}
+    assert themes_map[1].name == "RPG"
+    assert themes_map[2].name == "Adventure"
+    assert Theme.objects.filter(igdb_id=1).exists() is True
+    assert Theme.objects.filter(igdb_id=2).exists() is True
+
+
+@pytest.mark.django_db
+def test_get_themes_map_empty_input_returns_empty_map():
+    themes_map = _get_themes_map([], {})
+
+    assert themes_map == {}
+
+
+@pytest.mark.django_db
+def test_get_themes_map_updates_existing_theme_name():
+    Theme.objects.create(igdb_id=1, name="Old Name")
+    themes_objects = [Theme(igdb_id=1, name="New Name")]
+    unique_themes = {1: {"id": 1, "name": "New Name"}}
+
+    themes_map = _get_themes_map(themes_objects, unique_themes)
+
+    assert themes_map[1].name == "New Name"
+    assert Theme.objects.get(igdb_id=1).name == "New Name"
