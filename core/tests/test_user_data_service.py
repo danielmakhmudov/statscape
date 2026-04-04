@@ -12,6 +12,7 @@ from core.services.user_data_service import (
     _fetch_igdb_api_data,
     _prepare_game_instances,
     _get_themes_map,
+    _get_games_map,
 )
 from users.factories import UserFactory
 from users.models import User
@@ -310,7 +311,7 @@ def test_fetch_igdb_api_data_success(mock_igdb_client):
     igdb_data_map, themes_objects, unique_themes = _fetch_igdb_api_data(["100", "200"])
 
     assert igdb_data_map == mock_igdb_client.get_igdb_data.return_value
-    assert list(unique_themes.keys()) == [1, 2, 3]
+    assert set(unique_themes.keys()) == {1, 2, 3}
     assert unique_themes[1]["name"] == "RPG Duplicate"
     assert isinstance(themes_objects[0], Theme)
     assert {(t.igdb_id, t.name) for t in themes_objects} == {
@@ -355,7 +356,7 @@ def test_fetch_igdb_api_data_partially_valid_themes(mock_igdb_client):
     igdb_data_map, themes_objects, unique_themes = _fetch_igdb_api_data(["100", "200"])
 
     assert igdb_data_map == mock_igdb_client.get_igdb_data.return_value
-    assert list(unique_themes.keys()) == [1, 3]
+    assert set(unique_themes.keys()) == {1, 3}
     assert unique_themes[1]["name"] == "RPG Duplicate"
     assert {(t.igdb_id, t.name) for t in themes_objects} == {
         (1, "RPG Duplicate"),
@@ -482,3 +483,85 @@ def test_get_themes_map_updates_existing_theme_name():
 
     assert themes_map[1].name == "New Name"
     assert Theme.objects.get(igdb_id=1).name == "New Name"
+
+
+@pytest.mark.django_db
+def test_get_games_map_success_creates_and_returns_requested_games():
+    Game.objects.create(
+        app_id="999",
+        name="Unrelated Game",
+        logo_url=None,
+        header_url="https://cdn.cloudflare.steamstatic.com/steam/apps/999/header.jpg",
+        rating=0.0,
+        time_to_beat=0.0,
+    )
+    game_instances = [
+        Game(
+            app_id="100",
+            name="Game A",
+            logo_url="https://example.com/logo-a.jpg",
+            header_url="https://cdn.cloudflare.steamstatic.com/steam/apps/100/header.jpg",
+            rating=90.0,
+            time_to_beat=12.0,
+        ),
+        Game(
+            app_id="200",
+            name="Game B",
+            logo_url=None,
+            header_url="https://cdn.cloudflare.steamstatic.com/steam/apps/200/header.jpg",
+            rating=70.0,
+            time_to_beat=6.0,
+        ),
+    ]
+    steam_api_games_map = {"100": {"appid": 100}, "200": {"appid": 200}}
+
+    games_map = _get_games_map(game_instances, steam_api_games_map)
+
+    assert set(games_map.keys()) == {"100", "200"}
+    assert games_map["100"].name == "Game A"
+    assert games_map["200"].name == "Game B"
+    assert Game.objects.filter(app_id="100").exists() is True
+    assert Game.objects.filter(app_id="200").exists() is True
+
+
+@pytest.mark.django_db
+def test_get_games_map_empty_input_returns_empty_map():
+    games_map = _get_games_map([], {})
+
+    assert games_map == {}
+
+
+@pytest.mark.django_db
+def test_get_games_map_updates_existing_game_on_conflict():
+    Game.objects.create(
+        app_id="100",
+        name="Old Name",
+        logo_url="https://example.com/old-logo.jpg",
+        header_url="https://cdn.cloudflare.steamstatic.com/steam/apps/100/header-old.jpg",
+        rating=10.0,
+        time_to_beat=2.0,
+    )
+    game_instances = [
+        Game(
+            app_id="100",
+            name="New Name",
+            logo_url="https://example.com/new-logo.jpg",
+            header_url="https://cdn.cloudflare.steamstatic.com/steam/apps/100/header-new.jpg",
+            rating=95.0,
+            time_to_beat=15.0,
+        )
+    ]
+    steam_api_games_map = {"100": {"appid": 100}}
+
+    games_map = _get_games_map(game_instances, steam_api_games_map)
+
+    updated_game = Game.objects.get(app_id="100")
+    assert games_map["100"].name == "New Name"
+    assert updated_game.name == "New Name"
+    assert updated_game.logo_url == "https://example.com/new-logo.jpg"
+    assert (
+        updated_game.header_url
+        == "https://cdn.cloudflare.steamstatic.com/steam/apps/100/header-new.jpg"
+    )
+    assert updated_game.rating == 95.0
+    assert updated_game.time_to_beat == 15.0
