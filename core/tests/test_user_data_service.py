@@ -10,10 +10,11 @@ from core.services.user_data_service import (
     _get_user_library_from_db,
     _fetch_steam_api_data,
     _fetch_igdb_api_data,
+    _prepare_game_instances,
 )
 from users.factories import UserFactory
 from users.models import User
-from core.models import Theme
+from core.models import Theme, Game
 
 
 @pytest.mark.django_db
@@ -370,3 +371,73 @@ def test_fetch_igdb_api_data_empty_dict_response(mock_igdb_client):
     assert igdb_data_map == {}
     assert themes_objects == []
     assert unique_themes == {}
+
+
+def test_prepare_game_instances_success():
+    steam_api_games_map = {
+        "100": {"name": "Game A", "img_icon_url": "logo-a"},
+        "200": {"name": "Game B", "img_icon_url": "logo-b"},
+    }
+    igdb_data_map = {
+        "100": {"rating": 92.5, "time_to_beat": 14.0},
+        "200": {"rating": 77.0, "time_to_beat": 6.5},
+    }
+
+    game_instances = _prepare_game_instances(steam_api_games_map, igdb_data_map)
+    games_by_app_id = {g.app_id: g for g in game_instances}
+
+    assert len(game_instances) == 2
+    assert all(isinstance(g, Game) for g in game_instances)
+    assert games_by_app_id["100"].name == "Game A"
+    assert (
+        games_by_app_id["100"].logo_url
+        == "https://media.steampowered.com/steamcommunity/public/images/apps/100/logo-a.jpg"
+    )
+    assert (
+        games_by_app_id["100"].header_url
+        == "https://cdn.cloudflare.steamstatic.com/steam/apps/100/header.jpg"
+    )
+    assert games_by_app_id["100"].rating == 92.5
+    assert games_by_app_id["100"].time_to_beat == 14.0
+    assert games_by_app_id["200"].name == "Game B"
+
+
+def test_prepare_game_instances_partially_valid_data():
+    steam_api_games_map = {
+        "100": {"name": "Game A"},
+        "200": {"name": None, "img_icon_url": "logo-b"},
+        "300": {},
+    }
+    igdb_data_map = {
+        "100": {"rating": 88.0},
+        "200": {"time_to_beat": 9.0},
+    }
+
+    game_instances = _prepare_game_instances(steam_api_games_map, igdb_data_map)
+    games_by_app_id = {g.app_id: g for g in game_instances}
+
+    assert len(game_instances) == 3
+    assert games_by_app_id["100"].rating == 88.0
+    assert games_by_app_id["100"].time_to_beat == 0.0
+    assert games_by_app_id["100"].logo_url is None
+    assert games_by_app_id["200"].name == ""
+    assert (
+        games_by_app_id["200"].logo_url
+        == "https://media.steampowered.com/steamcommunity/public/images/apps/200/logo-b.jpg"
+    )
+    assert games_by_app_id["200"].rating == 0.0
+    assert games_by_app_id["200"].time_to_beat == 9.0
+    assert games_by_app_id["300"].name == ""
+    assert games_by_app_id["300"].rating == 0.0
+    assert games_by_app_id["300"].time_to_beat == 0.0
+    assert games_by_app_id["300"].logo_url is None
+    assert (
+        games_by_app_id["300"].header_url
+        == "https://cdn.cloudflare.steamstatic.com/steam/apps/300/header.jpg"
+    )
+
+
+def test_prepare_game_instances_empty_game_map_returns_empty_list():
+    game_instances = _prepare_game_instances({}, {"100": {"rating": 90.0}})
+
+    assert game_instances == []
