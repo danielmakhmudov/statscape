@@ -65,6 +65,16 @@ def mock_steam_api(monkeypatch):
 
 
 @pytest.fixture
+def mock_igdb_client(monkeypatch):
+    mock_instance = MagicMock()
+    monkeypatch.setattr(
+        "core.services.user_data_service.IGDBClient",
+        MagicMock(return_value=mock_instance),
+    )
+    return mock_instance
+
+
+@pytest.fixture
 def mock_response_success():
     mock_response = Mock()
     mock_response.raise_for_status.return_value = None

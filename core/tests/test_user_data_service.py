@@ -9,9 +9,11 @@ from core.services.user_data_service import (
     update_user_data,
     _get_user_library_from_db,
     _fetch_steam_api_data,
+    _fetch_igdb_api_data,
 )
 from users.factories import UserFactory
 from users.models import User
+from core.models import Theme
 
 
 @pytest.mark.django_db
@@ -284,3 +286,87 @@ def test_fetch_steam_api_data_non_dict_response_returns_empty(mock_steam_api):
     api_games_map, steam_app_ids = _fetch_steam_api_data(user)
 
     assert (api_games_map, steam_app_ids) == ({}, [])
+
+
+@pytest.mark.django_db
+def test_fetch_igdb_api_data_success(mock_igdb_client):
+    mock_igdb_client.get_igdb_data.return_value = {
+        "100": {
+            "themes": [
+                {"id": 1, "name": "RPG"},
+                {"id": 2, "name": "Sci-Fi"},
+            ]
+        },
+        "200": {
+            "themes": [
+                {"id": 1, "name": "RPG Duplicate"},
+                {"id": 3, "name": "Puzzle"},
+            ]
+        },
+    }
+
+    igdb_data_map, themes_objects, unique_themes = _fetch_igdb_api_data(["100", "200"])
+
+    assert igdb_data_map == mock_igdb_client.get_igdb_data.return_value
+    assert list(unique_themes.keys()) == [1, 2, 3]
+    assert unique_themes[1]["name"] == "RPG Duplicate"
+    assert isinstance(themes_objects[0], Theme)
+    assert {(t.igdb_id, t.name) for t in themes_objects} == {
+        (1, "RPG Duplicate"),
+        (2, "Sci-Fi"),
+        (3, "Puzzle"),
+    }
+    mock_igdb_client.get_igdb_data.assert_called_once_with(["100", "200"])
+
+
+@pytest.mark.django_db
+def test_fetch_igdb_api_data_invalid_api_response(mock_igdb_client):
+    mock_igdb_client.get_igdb_data.return_value = []
+
+    igdb_data_map, themes_objects, unique_themes = _fetch_igdb_api_data(["100"])
+
+    assert igdb_data_map == {}
+    assert themes_objects == []
+    assert unique_themes == {}
+
+
+@pytest.mark.django_db
+def test_fetch_igdb_api_data_partially_valid_themes(mock_igdb_client):
+    mock_igdb_client.get_igdb_data.return_value = {
+        "100": {
+            "themes": [
+                {"id": 1, "name": "RPG"},
+                {"id": None, "name": "Missing Id"},
+                {"id": 2},
+                {"name": "Missing Id Field"},
+                {},
+            ]
+        },
+        "200": {
+            "themes": [
+                {"id": 1, "name": "RPG Duplicate"},
+                {"id": 3, "name": "Adventure"},
+            ]
+        },
+    }
+
+    igdb_data_map, themes_objects, unique_themes = _fetch_igdb_api_data(["100", "200"])
+
+    assert igdb_data_map == mock_igdb_client.get_igdb_data.return_value
+    assert list(unique_themes.keys()) == [1, 3]
+    assert unique_themes[1]["name"] == "RPG Duplicate"
+    assert {(t.igdb_id, t.name) for t in themes_objects} == {
+        (1, "RPG Duplicate"),
+        (3, "Adventure"),
+    }
+
+
+@pytest.mark.django_db
+def test_fetch_igdb_api_data_empty_dict_response(mock_igdb_client):
+    mock_igdb_client.get_igdb_data.return_value = {}
+
+    igdb_data_map, themes_objects, unique_themes = _fetch_igdb_api_data(["100"])
+
+    assert igdb_data_map == {}
+    assert themes_objects == []
+    assert unique_themes == {}
