@@ -88,8 +88,6 @@ class IGDBClient:
                         where external_game_source = 1 & uid = ({steam_app_ids_string});""",
                 )
                 json_igdb_data.extend(json.loads(byte_igdb_data))
-            else:
-                continue
         return json_igdb_data
 
     def _get_igdb_time_to_beat_data(self, igdb_game_ids, wrapper):
@@ -103,9 +101,6 @@ class IGDBClient:
                         where game_id = ({igdb_game_ids_string});""",
                 )
                 time_to_beat_data.extend(json.loads(byte_time_to_beat_data))
-            else:
-                continue
-
         return time_to_beat_data
 
     def get_igdb_data(self, steam_app_ids):

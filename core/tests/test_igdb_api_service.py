@@ -2,6 +2,7 @@ import pytest
 import logging
 import requests
 import datetime
+import json
 from core.services.igdb_api_service import ConfigurationError, IGDBClient
 from unittest.mock import MagicMock
 from core.models import TokenStorage
@@ -368,3 +369,51 @@ def test_get_igdb_data_invalid_steam_ids(igdb_client, steam_app_ids):
     igdb_data = igdb_client.get_igdb_data(steam_app_ids)
 
     assert igdb_data == {}
+
+
+def test_get_igdb_basic_game_data_success_multiple_chunks(igdb_client):
+    steam_app_ids = [str(i) for i in range(501)]
+    first_chunk_payload = [{"uid": "1", "game": {"id": 11, "name": "Game 1"}}]
+    second_chunk_payload = [{"uid": "2", "game": {"id": 22, "name": "Game 2"}}]
+    wrapper = MagicMock()
+    wrapper.api_request = MagicMock(
+        side_effect=[
+            json.dumps(first_chunk_payload).encode("utf-8"),
+            json.dumps(second_chunk_payload).encode("utf-8"),
+        ]
+    )
+
+    result = igdb_client._get_igdb_basic_game_data(steam_app_ids, wrapper)
+
+    assert result == first_chunk_payload + second_chunk_payload
+    assert wrapper.api_request.call_count == 2
+    first_call_args = wrapper.api_request.call_args_list[0].args
+    second_call_args = wrapper.api_request.call_args_list[1].args
+    assert first_call_args[0] == "external_games"
+    assert second_call_args[0] == "external_games"
+    assert 'uid = ("0","1"' in first_call_args[1]
+    assert 'uid = ("500")' in second_call_args[1]
+
+
+def test_get_igdb_time_to_beat_data_success_multiple_chunks(igdb_client):
+    igdb_game_ids = list(range(501))
+    first_chunk_payload = [{"game_id": 1, "normally": 3600}]
+    second_chunk_payload = [{"game_id": 500, "normally": 1800}]
+    wrapper = MagicMock()
+    wrapper.api_request = MagicMock(
+        side_effect=[
+            json.dumps(first_chunk_payload).encode("utf-8"),
+            json.dumps(second_chunk_payload).encode("utf-8"),
+        ]
+    )
+
+    result = igdb_client._get_igdb_time_to_beat_data(igdb_game_ids, wrapper)
+
+    assert result == first_chunk_payload + second_chunk_payload
+    assert wrapper.api_request.call_count == 2
+    first_call_args = wrapper.api_request.call_args_list[0].args
+    second_call_args = wrapper.api_request.call_args_list[1].args
+    assert first_call_args[0] == "game_time_to_beats"
+    assert second_call_args[0] == "game_time_to_beats"
+    assert "game_id = (0,1" in first_call_args[1]
+    assert "game_id = (500)" in second_call_args[1]
