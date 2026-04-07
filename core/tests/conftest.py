@@ -75,6 +75,34 @@ def mock_igdb_client(monkeypatch):
 
 
 @pytest.fixture
+def mock_fetch_steam_api_data(monkeypatch):
+    mock_instance = MagicMock()
+    monkeypatch.setattr("core.services.user_data_service._fetch_steam_api_data", mock_instance)
+    return mock_instance
+
+
+@pytest.fixture
+def mock_fetch_igdb_api_data(monkeypatch):
+    mock_instance = MagicMock()
+    monkeypatch.setattr("core.services.user_data_service._fetch_igdb_api_data", mock_instance)
+    return mock_instance
+
+
+@pytest.fixture
+def mock_prepare_game_instances(monkeypatch):
+    mock_instance = MagicMock()
+    monkeypatch.setattr("core.services.user_data_service._prepare_game_instances", mock_instance)
+    return mock_instance
+
+
+@pytest.fixture
+def mock_get_themes_map(monkeypatch):
+    mock_instance = MagicMock()
+    monkeypatch.setattr("core.services.user_data_service._get_themes_map", mock_instance)
+    return mock_instance
+
+
+@pytest.fixture
 def mock_response_success():
     mock_response = Mock()
     mock_response.raise_for_status.return_value = None
