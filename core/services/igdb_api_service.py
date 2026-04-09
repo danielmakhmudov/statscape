@@ -92,7 +92,7 @@ class IGDBClient:
 
     def _get_igdb_time_to_beat_data(self, igdb_game_ids, wrapper):
         time_to_beat_data = []
-        for chunk in chunk_list(igdb_game_ids, 500):
+        for chunk in chunk_list(list(igdb_game_ids), 500):
             igdb_game_ids_string = ",".join([f"{gid}" for gid in chunk])
             if igdb_game_ids_string:
                 byte_time_to_beat_data = wrapper.api_request(

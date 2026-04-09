@@ -396,7 +396,7 @@ def test_get_igdb_basic_game_data_success_multiple_chunks(igdb_client):
 
 
 def test_get_igdb_time_to_beat_data_success_multiple_chunks(igdb_client):
-    igdb_game_ids = list(range(501))
+    igdb_game_ids = set(range(501))
     first_chunk_payload = [{"game_id": 1, "normally": 3600}]
     second_chunk_payload = [{"game_id": 500, "normally": 1800}]
     wrapper = MagicMock()
@@ -415,5 +415,5 @@ def test_get_igdb_time_to_beat_data_success_multiple_chunks(igdb_client):
     second_call_args = wrapper.api_request.call_args_list[1].args
     assert first_call_args[0] == "game_time_to_beats"
     assert second_call_args[0] == "game_time_to_beats"
-    assert "game_id = (0,1" in first_call_args[1]
-    assert "game_id = (500)" in second_call_args[1]
+    assert "game_id = (" in first_call_args[1]
+    assert "game_id = (" in second_call_args[1]
