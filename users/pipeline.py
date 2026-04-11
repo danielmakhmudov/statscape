@@ -9,17 +9,14 @@ def create_steam_user(strategy, details, backend, response=None, user=None, *arg
     if user:
         return {"is_new": False}
 
-    # Получаем Steam ID из response
     identity_url = getattr(response, "identity_url", "")
     steam_id = identity_url.split("/")[-1] if identity_url else None
 
     if not steam_id:
         return None
 
-    # Получаем дополнительные данные из Steam API
     steam_user_data = steam_api_service.get_user_profile(steam_id)
 
-    # Создаем пользователя с данными из Steam API
     user = User.objects.create_user(
         steam_id=steam_id,
         nickname=steam_user_data.get("personaname", ""),
