@@ -104,3 +104,68 @@ def test_create_steam_user_uses_defaults_when_profile_fields_are_missing(monkeyp
     assert created_user.steam_id == steam_id
     assert created_user.nickname == ""
     assert created_user.avatar_url == ""
+
+
+def test_update_steam_user_data_does_not_call_service_when_user_is_missing(monkeypatch):
+    mock_update_user_data = MagicMock()
+    monkeypatch.setattr(pipeline, "update_user_data", mock_update_user_data)
+
+    result = pipeline.update_steam_user_data(
+        strategy=None,
+        details={},
+        backend=None,
+        user=None,
+    )
+
+    assert result is None
+    mock_update_user_data.assert_not_called()
+
+
+def test_update_steam_user_data_does_not_call_service_when_user_is_new(monkeypatch):
+    mock_update_user_data = MagicMock()
+    monkeypatch.setattr(pipeline, "update_user_data", mock_update_user_data)
+
+    result = pipeline.update_steam_user_data(
+        strategy=None,
+        details={},
+        backend=None,
+        user=SimpleNamespace(steam_id="76561198000000002"),
+        is_new=True,
+    )
+
+    assert result is None
+    mock_update_user_data.assert_not_called()
+
+
+@pytest.mark.parametrize("is_new", [False, None])
+def test_update_steam_user_data_calls_service_for_existing_user(monkeypatch, is_new):
+    mock_update_user_data = MagicMock()
+    monkeypatch.setattr(pipeline, "update_user_data", mock_update_user_data)
+    user = SimpleNamespace(steam_id="76561198000000003")
+
+    result = pipeline.update_steam_user_data(
+        strategy=None,
+        details={},
+        backend=None,
+        user=user,
+        is_new=is_new,
+    )
+
+    assert result is None
+    mock_update_user_data.assert_called_once_with("76561198000000003")
+
+
+def test_update_steam_user_data_calls_service_when_is_new_flag_is_absent(monkeypatch):
+    mock_update_user_data = MagicMock()
+    monkeypatch.setattr(pipeline, "update_user_data", mock_update_user_data)
+    user = SimpleNamespace(steam_id="76561198000000004")
+
+    result = pipeline.update_steam_user_data(
+        strategy=None,
+        details={},
+        backend=None,
+        user=user,
+    )
+
+    assert result is None
+    mock_update_user_data.assert_called_once_with("76561198000000004")
