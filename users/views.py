@@ -1,9 +1,10 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import logout
 from django.contrib import messages
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_GET, require_POST
 
 
+@require_GET
 def login_view(request):
     if request.user.is_authenticated:
         return redirect("dashboard")

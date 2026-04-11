@@ -10,3 +10,9 @@ def user_without_nickname():
 @pytest.fixture
 def superuser():
     return SuperUserFactory()
+
+
+@pytest.fixture
+def authenticated_client(client, user):
+    client.force_login(user)
+    return client
