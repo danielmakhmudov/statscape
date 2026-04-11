@@ -5,7 +5,7 @@ from urllib.parse import parse_qs, urlparse
 from django.contrib.auth.models import AnonymousUser
 from django.urls import reverse
 
-from core.views import DashboardView
+from core.views import DashboardView, UpdateUserDataView
 
 
 def test_dashboard_view_redirects_anonymous_user_to_login(rf):
@@ -126,3 +126,47 @@ def test_dashboard_view_handles_empty_library_context(rf, monkeypatch):
     assert context["not_played_games_count"] == 0
     assert context["not_completed_games"] == []
     assert context["not_completed_games_count"] == 0
+
+
+def test_update_user_data_view_redirects_anonymous_user_to_login(rf):
+    request = rf.post(reverse("update_user_data"))
+    request.user = AnonymousUser()
+
+    response = UpdateUserDataView.as_view()(request)
+
+    assert response.status_code == 302
+    parsed_url = urlparse(response.url)
+    assert parsed_url.path == "/login/"
+    assert parse_qs(parsed_url.query).get("next") == [reverse("update_user_data")]
+
+
+def test_update_user_data_view_post_updates_data_and_redirects_to_dashboard(rf, monkeypatch):
+    steam_id = "76561198000000010"
+    social_auth = SimpleNamespace(get=MagicMock(return_value=SimpleNamespace(uid=steam_id)))
+    request = rf.post(reverse("update_user_data"))
+    request.user = SimpleNamespace(is_authenticated=True, social_auth=social_auth)
+    mock_update_user_data = MagicMock()
+    monkeypatch.setattr("core.views.update_user_data", mock_update_user_data)
+
+    response = UpdateUserDataView.as_view()(request)
+
+    assert response.status_code == 302
+    assert response.url == reverse("dashboard")
+    social_auth.get.assert_called_once_with(provider="steam")
+    mock_update_user_data.assert_called_once_with(steam_id)
+
+
+def test_update_user_data_view_get_uses_post_logic_and_redirects_to_dashboard(rf, monkeypatch):
+    steam_id = "76561198000000011"
+    social_auth = SimpleNamespace(get=MagicMock(return_value=SimpleNamespace(uid=steam_id)))
+    request = rf.get(reverse("update_user_data"))
+    request.user = SimpleNamespace(is_authenticated=True, social_auth=social_auth)
+    mock_update_user_data = MagicMock()
+    monkeypatch.setattr("core.views.update_user_data", mock_update_user_data)
+
+    response = UpdateUserDataView.as_view()(request)
+
+    assert response.status_code == 302
+    assert response.url == reverse("dashboard")
+    social_auth.get.assert_called_once_with(provider="steam")
+    mock_update_user_data.assert_called_once_with(steam_id)
