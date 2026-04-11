@@ -1,5 +1,6 @@
 from types import SimpleNamespace
 from unittest.mock import MagicMock
+from datetime import datetime, timezone as dt_timezone
 
 import pytest
 
@@ -60,12 +61,15 @@ def test_create_steam_user_returns_none_when_steam_id_is_missing(response, monke
 @pytest.mark.django_db
 def test_create_steam_user_creates_user_from_steam_profile(monkeypatch):
     steam_id = "76561198000000000"
+    timecreated = 1700000000
 
     def mock_get_user_profile(_steam_id):
         assert _steam_id == steam_id
         return {
             "personaname": "SteamNickname",
+            "realname": "Steam Real Name",
             "avatarfull": "https://cdn.example.com/avatar.png",
+            "timecreated": timecreated,
         }
 
     monkeypatch.setattr(pipeline.steam_api_service, "get_user_profile", mock_get_user_profile)
@@ -82,7 +86,9 @@ def test_create_steam_user_creates_user_from_steam_profile(monkeypatch):
     created_user = result["user"]
     assert created_user.steam_id == steam_id
     assert created_user.nickname == "SteamNickname"
+    assert created_user.realname == "Steam Real Name"
     assert created_user.avatar_url == "https://cdn.example.com/avatar.png"
+    assert created_user.steam_user_since == datetime.fromtimestamp(timecreated, tz=dt_timezone.utc)
     assert User.objects.filter(pk=created_user.pk).exists()
 
 
@@ -103,7 +109,9 @@ def test_create_steam_user_uses_defaults_when_profile_fields_are_missing(monkeyp
     created_user = result["user"]
     assert created_user.steam_id == steam_id
     assert created_user.nickname == ""
+    assert created_user.realname is None
     assert created_user.avatar_url == ""
+    assert created_user.steam_user_since is None
 
 
 def test_update_steam_user_data_does_not_call_service_when_user_is_missing(monkeypatch):
