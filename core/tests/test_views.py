@@ -5,7 +5,7 @@ from urllib.parse import parse_qs, urlparse
 from django.contrib.auth.models import AnonymousUser
 from django.urls import reverse
 
-from core.views import DashboardView, UpdateUserDataView
+from core.views import DashboardView, LibraryView, UpdateUserDataView
 
 
 def test_dashboard_view_redirects_anonymous_user_to_login(rf):
@@ -170,3 +170,146 @@ def test_update_user_data_view_get_uses_post_logic_and_redirects_to_dashboard(rf
     assert response.url == reverse("dashboard")
     social_auth.get.assert_called_once_with(provider="steam")
     mock_update_user_data.assert_called_once_with(steam_id)
+
+
+def test_library_view_redirects_anonymous_user_to_login(rf):
+    request = rf.get(reverse("library"))
+    request.user = AnonymousUser()
+
+    response = LibraryView.as_view()(request)
+
+    assert response.status_code == 302
+    parsed_url = urlparse(response.url)
+    assert parsed_url.path == "/login/"
+    assert parse_qs(parsed_url.query).get("next") == [reverse("library")]
+
+
+def test_library_view_builds_context_without_filter(rf, monkeypatch):
+    steam_id = "76561198000000100"
+    social_auth = SimpleNamespace(get=MagicMock(return_value=SimpleNamespace(uid=steam_id)))
+    request = rf.get(reverse("library"))
+    request.user = SimpleNamespace(is_authenticated=True, social_auth=social_auth)
+
+    raw_library = [{"game": "A"}, {"game": "B"}]
+    enriched_library = [{"game": "A", "playtime_hours": 10.0}, {"game": "B", "playtime_hours": 5.0}]
+    mock_get_or_fetch_user_library = MagicMock(return_value=raw_library)
+    mock_get_not_played_games = MagicMock()
+    mock_get_potentially_not_completed_games = MagicMock()
+    mock_enrich_games_with_stats = MagicMock(return_value=(enriched_library, 15.0))
+
+    monkeypatch.setattr("core.views.get_or_fetch_user_library", mock_get_or_fetch_user_library)
+    monkeypatch.setattr("core.views.get_not_played_games", mock_get_not_played_games)
+    monkeypatch.setattr(
+        "core.views.get_potentially_not_completed_games",
+        mock_get_potentially_not_completed_games,
+    )
+    monkeypatch.setattr("core.views.enrich_games_with_stats", mock_enrich_games_with_stats)
+
+    response = LibraryView.as_view()(request)
+    context = response.context_data
+
+    assert response.status_code == 200
+    assert context["games_count"] == 2
+    assert context["current_filter"] is None
+    assert list(context["page_obj"].object_list) == enriched_library
+
+    social_auth.get.assert_called_once_with(provider="steam")
+    mock_get_or_fetch_user_library.assert_called_once_with(steam_id=steam_id)
+    mock_get_not_played_games.assert_not_called()
+    mock_get_potentially_not_completed_games.assert_not_called()
+    mock_enrich_games_with_stats.assert_called_once_with(raw_library)
+
+
+def test_library_view_applies_not_played_filter_before_enrichment(rf, monkeypatch):
+    steam_id = "76561198000000101"
+    social_auth = SimpleNamespace(get=MagicMock(return_value=SimpleNamespace(uid=steam_id)))
+    request = rf.get(f"{reverse('library')}?filter=not_played")
+    request.user = SimpleNamespace(is_authenticated=True, social_auth=social_auth)
+
+    raw_library = [{"game": "A"}, {"game": "B"}, {"game": "C"}]
+    filtered_library = [{"game": "C"}]
+    enriched_library = [{"game": "C", "playtime_hours": 0.0}]
+    mock_get_or_fetch_user_library = MagicMock(return_value=raw_library)
+    mock_get_not_played_games = MagicMock(return_value=(filtered_library, 1))
+    mock_get_potentially_not_completed_games = MagicMock()
+    mock_enrich_games_with_stats = MagicMock(return_value=(enriched_library, 0.0))
+
+    monkeypatch.setattr("core.views.get_or_fetch_user_library", mock_get_or_fetch_user_library)
+    monkeypatch.setattr("core.views.get_not_played_games", mock_get_not_played_games)
+    monkeypatch.setattr(
+        "core.views.get_potentially_not_completed_games",
+        mock_get_potentially_not_completed_games,
+    )
+    monkeypatch.setattr("core.views.enrich_games_with_stats", mock_enrich_games_with_stats)
+
+    response = LibraryView.as_view()(request)
+    context = response.context_data
+
+    assert response.status_code == 200
+    assert context["games_count"] == 1
+    assert context["current_filter"] == "not_played"
+    assert list(context["page_obj"].object_list) == enriched_library
+
+    mock_get_not_played_games.assert_called_once_with(raw_library)
+    mock_get_potentially_not_completed_games.assert_not_called()
+    mock_enrich_games_with_stats.assert_called_once_with(filtered_library)
+
+
+def test_library_view_applies_not_completed_filter_before_enrichment(rf, monkeypatch):
+    steam_id = "76561198000000102"
+    social_auth = SimpleNamespace(get=MagicMock(return_value=SimpleNamespace(uid=steam_id)))
+    request = rf.get(f"{reverse('library')}?filter=not_completed")
+    request.user = SimpleNamespace(is_authenticated=True, social_auth=social_auth)
+
+    raw_library = [{"game": "A"}, {"game": "B"}, {"game": "C"}]
+    filtered_library = [{"game": "B"}]
+    enriched_library = [{"game": "B", "playtime_hours": 2.0}]
+    mock_get_or_fetch_user_library = MagicMock(return_value=raw_library)
+    mock_get_not_played_games = MagicMock()
+    mock_get_potentially_not_completed_games = MagicMock(return_value=(filtered_library, 1))
+    mock_enrich_games_with_stats = MagicMock(return_value=(enriched_library, 2.0))
+
+    monkeypatch.setattr("core.views.get_or_fetch_user_library", mock_get_or_fetch_user_library)
+    monkeypatch.setattr("core.views.get_not_played_games", mock_get_not_played_games)
+    monkeypatch.setattr(
+        "core.views.get_potentially_not_completed_games",
+        mock_get_potentially_not_completed_games,
+    )
+    monkeypatch.setattr("core.views.enrich_games_with_stats", mock_enrich_games_with_stats)
+
+    response = LibraryView.as_view()(request)
+    context = response.context_data
+
+    assert response.status_code == 200
+    assert context["games_count"] == 1
+    assert context["current_filter"] == "not_completed"
+    assert list(context["page_obj"].object_list) == enriched_library
+
+    mock_get_not_played_games.assert_not_called()
+    mock_get_potentially_not_completed_games.assert_called_once_with(raw_library)
+    mock_enrich_games_with_stats.assert_called_once_with(filtered_library)
+
+
+def test_library_view_paginates_enriched_library(rf, monkeypatch):
+    steam_id = "76561198000000103"
+    social_auth = SimpleNamespace(get=MagicMock(return_value=SimpleNamespace(uid=steam_id)))
+    request = rf.get(f"{reverse('library')}?page=2")
+    request.user = SimpleNamespace(is_authenticated=True, social_auth=social_auth)
+
+    raw_library = [{"game": f"G{i}"} for i in range(30)]
+    enriched_library = [{"game": f"G{i}", "playtime_hours": float(i)} for i in range(30)]
+
+    monkeypatch.setattr("core.views.get_or_fetch_user_library", MagicMock(return_value=raw_library))
+    monkeypatch.setattr("core.views.get_not_played_games", MagicMock())
+    monkeypatch.setattr("core.views.get_potentially_not_completed_games", MagicMock())
+    monkeypatch.setattr(
+        "core.views.enrich_games_with_stats", MagicMock(return_value=(enriched_library, 0.0))
+    )
+
+    response = LibraryView.as_view()(request)
+    page_obj = response.context_data["page_obj"]
+
+    assert response.status_code == 200
+    assert page_obj.number == 2
+    assert page_obj.paginator.count == 30
+    assert len(page_obj.object_list) == 6
