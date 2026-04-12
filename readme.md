@@ -69,3 +69,35 @@
 - **API:** Steam Web API, IGDB API
 - **Authentication:** Steam OpenID Authentication
 - **Data Visualization:** Chart.js
+
+## Docker Quick Start
+
+This project can be run locally with Docker Compose (`web` + `db`).
+
+### 1) Build and start containers
+
+```bash
+docker compose up --build
+```
+
+App will be available at [http://localhost:8000](http://localhost:8000).
+
+### 2) Run migrations manually (optional)
+
+Migrations are already executed on container startup, but you can also run:
+
+```bash
+docker compose run --rm web python manage.py migrate
+```
+
+### 3) Create a superuser (optional)
+
+```bash
+docker compose run --rm web python manage.py createsuperuser
+```
+
+### 4) Run tests inside container (optional)
+
+```bash
+docker compose run --rm web python -m pytest
+```
