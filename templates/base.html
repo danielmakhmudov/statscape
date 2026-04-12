@@ -12,14 +12,16 @@
     <!-- Topbar -->
     <nav class="topbar">
         <div class="topbar-content">
-            <div class="topbar-logo">Statscape</div>
+            <div class="topbar-left">
+                <div class="topbar-logo">Statscape</div>
+                {%if user.is_authenticated%}
+                    <div class="topbar-nav">
+                        <a href="{% url 'dashboard'%}" class="nav-link{% if request.resolver_match.url_name == 'dashboard' %} active{% endif %}">Dashboard</a>
+                        <a href="{% url 'library'%}" class="nav-link{% if request.resolver_match.url_name == 'library' %} active{% endif %}">Library</a>
+                    </div>
+                {%endif%}
+            </div>
             {%if user.is_authenticated%}
-                <div class="topbar-nav">
-                    <a href="{% url 'dashboard'%}" class="nav-link{% if request.resolver_match.url_name == 'dashboard' %} active{% endif %}">Dashboard</a>
-                    <a href="{% url 'library'%}" class="nav-link{% if request.resolver_match.url_name == 'library' %} active{% endif %}">Library</a>
-                    <a href="#" class="nav-link">Achievements</a>
-                    <a href="#" class="nav-link">Statistics</a>
-                </div>
                 <button id="logoutBtn" class="topbar-logout">Logout</button>
             {%endif%}
         </div>

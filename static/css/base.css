@@ -51,6 +51,12 @@ body::before {
     padding: 0 2rem;
 }
 
+.topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
 .topbar-logo {
     font-size: 1.25rem;
     font-weight: 700;
