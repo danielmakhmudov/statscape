@@ -58,6 +58,8 @@
 - **Visual Game Cards** — beautiful card-based layout with game cover art
 - **Detailed Game Information:**
   - Total and recent playtime statistics
+  - Time to beat estimates
+  - Community rating
   - Game themes and genres (tags)
   - High-quality game covers from IGDB
 - **Library Overview** — total count of games in the collection
@@ -92,6 +94,7 @@ Build a clean analytics dashboard that transforms raw Steam/IGDB data into pract
 - **API:** Steam Web API, IGDB API
 - **Authentication:** Steam OpenID Authentication
 - **Data Visualization:** Chart.js
+- **Testing:** pytest
 
 ## ✅ Tests
 
