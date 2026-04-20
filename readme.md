@@ -98,7 +98,9 @@ Build a clean analytics dashboard that transforms raw Steam/IGDB data into pract
 
 ## ✅ Tests
 
-The project is covered by automated tests (`pytest`, `pytest-django`), including service, model, and view layers.
+The project is covered by automated tests (`pytest`), including:
+- Unit tests for service, model, and helper logic
+- Integration (smoke) tests for core user flows and view-level behavior
 
 Run tests inside Docker:
 
