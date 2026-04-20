@@ -7,7 +7,7 @@
 
 **Statscape** collects and analyzes data about user's Steam gaming activity, providing detailed statistics and visualization. The application integrates with **Steam Web API** and **IGDB API** to retrieve complete information about games and the user's gaming profile.
 
-**Note: This project is currently under active development. Some features may be incomplete or subject to change.**
+**Project status:** MVP complete. The core user flows are implemented and covered by tests; current work focuses on iterative improvements and UX polish.
 
 ---
 ## 📸 Screenshots
@@ -20,20 +20,21 @@
 *Main dashboard with statistics overview, playtime distribution chart, and favorite games*
 ![Dashboard-1](screenshots/dashboard-1.png)
 ![Dashboard-2](screenshots/dashboard-2.png)
-![Dashboard-3](screenshots/dashboard-2.png)
+![Dashboard-3](screenshots/dashboard-3.png)
 
 
 ### Library
-*Visual game library with detailed cards, cover art, and theme tags*
+*Visual game library with detailed cards(total/recent playtime, rating, time to beat, cover art and theme tags)*
 ![Library-1](screenshots/library-1.png)
+![Library-2](screenshots/library-2.png)
 
 ### Sign out
 *Sign out confirmation page*
-![Library-1](screenshots/logout-1.png)
+![Logout-1](screenshots/logout-1.png)
 
 ### Delete Profile
 *Profile deletion with data removal confirmation*
-![Library-1](screenshots/delete-profile-1.png)
+![Delete-profile-1](screenshots/delete-profile-1.png)
 
 ## ✨ Key Features
 
@@ -61,6 +62,28 @@
   - High-quality game covers from IGDB
 - **Library Overview** — total count of games in the collection
 
+## Problem / Goal / My Contribution
+
+### Problem
+Steam users can see raw game library data, but it is hard to quickly understand personal playtime patterns, unfinished titles, and meaningful trends.
+
+### Goal
+Build a clean analytics dashboard that transforms raw Steam/IGDB data into practical insights: what you play most, what is still unfinished, and what to play next.
+
+### My Contribution
+- Designed and implemented backend data flow for Steam and IGDB integrations.
+- Built service-layer logic for data enrichment, aggregation, and derived statistics.
+- Implemented key dashboard and library views with filtering and pagination.
+- Added automated tests for models, views, and service modules.
+
+## Technical Depth
+
+- **Architecture:** Django monolith with clear app boundaries (`users`, `core`) and dedicated service layer for external API/data-processing logic.
+- **Data integration pipeline:** Steam library/profile data is fetched, normalized, enriched with IGDB metadata (themes, covers, time-to-beat, rating), then persisted for fast UI rendering.
+- **Domain modeling:** Separate entities for games, user-game relations, tags/themes, and token storage;
+- **Reliability patterns:** Validation and defensive handling for incomplete API payloads, transactional write paths for consistency, and test-backed behavior for edge cases.
+- **Quality:** `pytest` + `pytest-django` test suite covering services, models, and views.
+
 ## 🛠 Technologies
 
 - **Backend:** Python, Django
@@ -69,6 +92,22 @@
 - **API:** Steam Web API, IGDB API
 - **Authentication:** Steam OpenID Authentication
 - **Data Visualization:** Chart.js
+
+## ✅ Tests
+
+The project is covered by automated tests (`pytest`, `pytest-django`), including service, model, and view layers.
+
+Run tests inside Docker:
+
+```bash
+docker compose run --rm web python -m pytest
+```
+
+If containers are already running, you can use:
+
+```bash
+docker compose exec web python -m pytest
+```
 
 ## Docker Quick Start
 
