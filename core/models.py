@@ -53,4 +53,4 @@ class TokenStorage(models.Model):
     updated_at = models.DateTimeField()
 
     def __str__(self):
-        return f"{self.service_name} -- {self.access_token} expires at: {self.expires_at}"
+        return f"{self.service_name} token expires at: {self.expires_at}"

@@ -22,6 +22,17 @@ class SteamAPI:
             logger.error("STEAM_API_KEY not found in .env")
             raise ConfigurationError("STEAM_API_KEY is required")
 
+    @staticmethod
+    def _log_api_error(steam_id: str, operation: str, error: requests.RequestException) -> None:
+        response = getattr(error, "response", None)
+        status_code = getattr(response, "status_code", "unknown")
+        logger.error(
+            "Steam API error for user %s: %s request failed with status %s",
+            steam_id,
+            operation,
+            status_code,
+        )
+
     def get_user_profile(self, steam_id: str) -> dict:
         endpoint = f"{self.base_url}/ISteamUser/GetPlayerSummaries/v0002/"
         params = {"key": self.steam_api_key, "steamids": steam_id, "format": "json"}
@@ -36,7 +47,7 @@ class SteamAPI:
             return {}
 
         except requests.RequestException as e:
-            logger.error(f"Steam API error for user {steam_id}: {e}")
+            self._log_api_error(steam_id, "user profile", e)
             return {}
 
     def get_user_library(self, steam_id: str) -> dict:
@@ -59,7 +70,7 @@ class SteamAPI:
             return {}
 
         except requests.RequestException as e:
-            logger.error(f"Steam API error for user {steam_id}: {e}")
+            self._log_api_error(steam_id, "user library", e)
             return {}
 
     def get_recently_played_games(self, steam_id: str) -> dict:
@@ -81,5 +92,5 @@ class SteamAPI:
             return {}
 
         except requests.RequestException as e:
-            logger.error(f"Steam API error for user {steam_id}: {e}")
+            self._log_api_error(steam_id, "recently played games", e)
             return {}

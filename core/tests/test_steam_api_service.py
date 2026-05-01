@@ -75,6 +75,23 @@ def test_get_user_profile_request_exception(steam_api_instance, caplog):
     steam_api_instance.session.get.assert_called_once()
 
 
+def test_get_user_profile_error_does_not_log_api_key(steam_api_instance, caplog):
+    sensitive_error = requests.HTTPError(
+        "500 Server Error for url: "
+        "https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/"
+        "?key=fake-key&steamids=123&format=json"
+    )
+    steam_api_instance.session.get = Mock(side_effect=sensitive_error)
+
+    with caplog.at_level(logging.ERROR):
+        response = steam_api_instance.get_user_profile(steam_id="123")
+
+    assert response == {}
+    assert "Steam API error for user 123:" in caplog.text
+    assert "fake-key" not in caplog.text
+    assert "key=" not in caplog.text
+
+
 def test_get_user_library_success(steam_api_instance, mock_response_success):
     mock_response_success.json.return_value = {
         "response": {"game_count": 3, "games": [{"appid": 123}, {"appid": 456}, {"appid": 789}]}
