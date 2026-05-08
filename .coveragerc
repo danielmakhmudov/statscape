@@ -7,9 +7,9 @@ omit =
     */tests/*
     conftest.py
     manage.py
-    steamscape/asgi.py
-    steamscape/wsgi.py
-    steamscape/settings.py
+    statscape/asgi.py
+    statscape/wsgi.py
+    statscape/settings.py
     *admin.py*
 
 [report]
