@@ -96,10 +96,19 @@ def _get_user_library_from_db(steam_id, force_update=False):
         return UserGame.objects.none()
 
     if not force_update:
-        user_games = UserGame.objects.filter(user=user)
+        user_games = _get_user_library_queryset(user)
         if user_games.exists():
             return user_games
     return user
+
+
+def _get_user_library_queryset(user):
+    return (
+        UserGame.objects.filter(user=user)
+        .select_related("game")
+        .prefetch_related("game__themes")
+        .order_by("game__name", "game__app_id")
+    )
 
 
 def _fetch_steam_api_data(user):
@@ -263,6 +272,4 @@ def _join_user_game_instances(user, steam_api_games_map, game_map):
         update_fields=["total_playtime", "recent_playtime", "last_played"],
         batch_size=1000,
     )
-    return (
-        UserGame.objects.filter(user=user).select_related("game").prefetch_related("game__themes")
-    )
+    return _get_user_library_queryset(user)

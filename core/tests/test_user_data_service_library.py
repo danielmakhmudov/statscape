@@ -76,13 +76,31 @@ def test_get_or_fetch_user_library_success_full_pipeline():
 @pytest.mark.django_db
 def test_get_or_fetch_user_library_returns_existing_library_from_db(mock_fetch_steam_api_data):
     user = UserFactory.create(steam_id="12345")
-    UserGameFactory.create_batch(2, user=user)
+    game_b = Game.objects.create(
+        app_id="200",
+        name="Beta Game",
+        logo_url=None,
+        header_url="https://cdn.cloudflare.steamstatic.com/steam/apps/200/header.jpg",
+        rating=0.0,
+        time_to_beat=0.0,
+    )
+    game_a = Game.objects.create(
+        app_id="100",
+        name="Alpha Game",
+        logo_url=None,
+        header_url="https://cdn.cloudflare.steamstatic.com/steam/apps/100/header.jpg",
+        rating=0.0,
+        time_to_beat=0.0,
+    )
+    UserGameFactory.create(user=user, game=game_b)
+    UserGameFactory.create(user=user, game=game_a)
 
     result = get_or_fetch_user_library("12345")
 
     assert isinstance(result, QuerySet)
     assert result.count() == 2
     assert all(ug.user == user for ug in result)
+    assert [ug.game.name for ug in result] == ["Alpha Game", "Beta Game"]
     mock_fetch_steam_api_data.assert_not_called()
 
 

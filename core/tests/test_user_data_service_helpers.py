@@ -343,6 +343,7 @@ def test_join_user_game_instances_success_returns_only_target_user_data():
     assert isinstance(result, QuerySet)
     assert result.count() == 2
     assert set(result_by_app_id.keys()) == {"100", "200"}
+    assert [ug.game.name for ug in result] == ["Game A", "Game B"]
     assert all(ug.user == user for ug in result)
     assert result_by_app_id["100"].total_playtime == 120
     assert result_by_app_id["100"].recent_playtime == 20
