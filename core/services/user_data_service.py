@@ -4,9 +4,10 @@ from users.models import User
 from core.models import UserGame, Game, Theme
 from django.db import transaction
 from datetime import datetime, timezone as dt_timezone
-from core.services.igdb_api_service import IGDBClient
+from core.services.igdb_api_service import ConfigurationError, IGDBAPIError, IGDBClient
 import logging
 import os
+import requests
 from dotenv import load_dotenv
 
 logger = logging.getLogger(__name__)
@@ -123,11 +124,16 @@ def _fetch_steam_api_data(user):
 
 
 def _fetch_igdb_api_data(steam_app_ids):
-    igdb_client = IGDBClient(
-        IGDB_CLIENT_ID=os.getenv("IGDB_CLIENT_ID"),
-        IGDB_CLIENT_SECRET=os.getenv("IGDB_CLIENT_SECRET"),
-    )
-    igdb_data_map = igdb_client.get_igdb_data(steam_app_ids)
+    try:
+        igdb_client = IGDBClient(
+            IGDB_CLIENT_ID=os.getenv("IGDB_CLIENT_ID"),
+            IGDB_CLIENT_SECRET=os.getenv("IGDB_CLIENT_SECRET"),
+        )
+        igdb_data_map = igdb_client.get_igdb_data(steam_app_ids)
+    except (ConfigurationError, IGDBAPIError, ValueError, requests.RequestException):
+        logger.exception("Failed to fetch IGDB data")
+        return {}, [], {}
+
     if not isinstance(igdb_data_map, dict):
         return {}, [], {}
     themes_list = []

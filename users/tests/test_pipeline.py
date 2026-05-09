@@ -8,10 +8,19 @@ from users import pipeline
 from users.models import User
 
 
+@pytest.fixture
+def mock_steam_api_service(monkeypatch):
+    mock_service = MagicMock()
+    monkeypatch.setattr(pipeline, "SteamAPI", MagicMock(return_value=mock_service))
+    return mock_service
+
+
 @pytest.mark.django_db
-def test_create_steam_user_returns_is_new_false_when_user_already_exists(user, monkeypatch):
+def test_create_steam_user_returns_is_new_false_when_user_already_exists(
+    user, mock_steam_api_service
+):
     mock_get_user_profile = MagicMock()
-    monkeypatch.setattr(pipeline.steam_api_service, "get_user_profile", mock_get_user_profile)
+    mock_steam_api_service.get_user_profile = mock_get_user_profile
 
     result = pipeline.create_steam_user(
         strategy=None,
@@ -44,7 +53,10 @@ def test_create_steam_user_returns_is_new_false_when_user_already_exists(user, m
 )
 def test_create_steam_user_returns_none_when_steam_id_is_missing(response, monkeypatch):
     mock_get_user_profile = MagicMock()
-    monkeypatch.setattr(pipeline.steam_api_service, "get_user_profile", mock_get_user_profile)
+    mock_service = MagicMock()
+    mock_service.get_user_profile = mock_get_user_profile
+    mock_steam_api = MagicMock(return_value=mock_service)
+    monkeypatch.setattr(pipeline, "SteamAPI", mock_steam_api)
 
     result = pipeline.create_steam_user(
         strategy=None,
@@ -56,10 +68,11 @@ def test_create_steam_user_returns_none_when_steam_id_is_missing(response, monke
 
     assert result is None
     mock_get_user_profile.assert_not_called()
+    mock_steam_api.assert_not_called()
 
 
 @pytest.mark.django_db
-def test_create_steam_user_creates_user_from_steam_profile(monkeypatch):
+def test_create_steam_user_creates_user_from_steam_profile(mock_steam_api_service):
     steam_id = "76561198000000000"
     timecreated = 1700000000
 
@@ -72,7 +85,7 @@ def test_create_steam_user_creates_user_from_steam_profile(monkeypatch):
             "timecreated": timecreated,
         }
 
-    monkeypatch.setattr(pipeline.steam_api_service, "get_user_profile", mock_get_user_profile)
+    mock_steam_api_service.get_user_profile = mock_get_user_profile
 
     result = pipeline.create_steam_user(
         strategy=None,
@@ -93,9 +106,9 @@ def test_create_steam_user_creates_user_from_steam_profile(monkeypatch):
 
 
 @pytest.mark.django_db
-def test_create_steam_user_uses_defaults_when_profile_fields_are_missing(monkeypatch):
+def test_create_steam_user_uses_defaults_when_profile_fields_are_missing(mock_steam_api_service):
     steam_id = "76561198000000001"
-    monkeypatch.setattr(pipeline.steam_api_service, "get_user_profile", lambda _: {})
+    mock_steam_api_service.get_user_profile = lambda _: {}
 
     result = pipeline.create_steam_user(
         strategy=None,

@@ -1,6 +1,7 @@
 import pytest
 
 from core.models import Theme
+from core.services.igdb_api_service import IGDBAPIError
 from core.services.user_data_service import _fetch_igdb_api_data, _fetch_steam_api_data
 from users.factories import UserFactory
 
@@ -160,3 +161,16 @@ def test_fetch_igdb_api_data_empty_dict_response(mock_igdb_client):
     assert igdb_data_map == {}
     assert themes_objects == []
     assert unique_themes == {}
+
+
+@pytest.mark.django_db
+def test_fetch_igdb_api_data_returns_empty_on_client_error(mock_igdb_client, caplog):
+    mock_igdb_client.get_igdb_data.side_effect = IGDBAPIError("igdb unavailable")
+
+    with caplog.at_level("ERROR"):
+        igdb_data_map, themes_objects, unique_themes = _fetch_igdb_api_data(["100"])
+
+    assert igdb_data_map == {}
+    assert themes_objects == []
+    assert unique_themes == {}
+    assert "Failed to fetch IGDB data" in caplog.text

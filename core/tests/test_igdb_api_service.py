@@ -3,7 +3,7 @@ import logging
 import requests
 import datetime
 import json
-from core.services.igdb_api_service import ConfigurationError, IGDBClient
+from core.services.igdb_api_service import ConfigurationError, IGDBAPIError, IGDBClient
 from unittest.mock import MagicMock
 from core.models import TokenStorage
 from core.factories import TokenStorageFactory
@@ -108,7 +108,7 @@ def test_get_access_token_bad_response(igdb_client, monkeypatch, caplog):
     monkeypatch.setattr("core.services.igdb_api_service.requests.post", mock_post)
 
     with caplog.at_level(logging.ERROR):
-        with pytest.raises(Exception):
+        with pytest.raises(IGDBAPIError, match="Failed to get IGDB token"):
             igdb_client.get_access_token()
 
     assert "IGDB token request failed with status code: 500" in caplog.text

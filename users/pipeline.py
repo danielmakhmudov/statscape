@@ -3,8 +3,6 @@ from datetime import datetime, timezone as dt_timezone
 from core.services.steam_api_service import SteamAPI
 from core.services.user_data_service import update_user_data
 
-steam_api_service = SteamAPI()
-
 
 def create_steam_user(strategy, details, backend, response=None, user=None, *args, **kwargs):
     if user:
@@ -16,6 +14,7 @@ def create_steam_user(strategy, details, backend, response=None, user=None, *arg
     if not steam_id:
         return None
 
+    steam_api_service = SteamAPI()
     steam_user_data = steam_api_service.get_user_profile(steam_id)
     timecreated = steam_user_data.get("timecreated")
     steam_user_since = (

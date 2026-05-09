@@ -18,6 +18,10 @@ class ConfigurationError(Exception):
     pass
 
 
+class IGDBAPIError(Exception):
+    pass
+
+
 class IGDBClient:
     def __init__(self, IGDB_CLIENT_ID, IGDB_CLIENT_SECRET):
         if (
@@ -71,7 +75,7 @@ class IGDBClient:
                     logger.error(
                         f"IGDB token request failed with status code: {response.status_code}"
                     )
-                    raise Exception(f"Failed to get IGDB token: {response.text}")
+                    raise IGDBAPIError(f"Failed to get IGDB token: {response.text}")
             except requests.exceptions.RequestException as e:
                 logger.error(f"Error: Failed to get IGDB ACCESS TOKEN: {e}")
                 raise
